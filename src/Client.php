@@ -102,11 +102,15 @@ final class Client
         ?StreamFactoryInterface $streamFactory,
         ?float $timeoutSeconds,
     ): array {
-        if ($httpClient === null && $timeoutSeconds !== null) {
-            $httpClient = new GuzzleClient(['timeout' => $timeoutSeconds]);
-        }
+        if ($httpClient === null && $requestFactory === null && $streamFactory === null) {
+            $options = [
+                'force_ip_resolve' => 'v4',
+            ];
+            if ($timeoutSeconds !== null) {
+                $options['timeout'] = $timeoutSeconds;
+            }
 
-        if ($requestFactory === null && $streamFactory === null && $timeoutSeconds !== null) {
+            $httpClient = new GuzzleClient($options);
             $factory = new Psr17Factory();
             $requestFactory = $factory;
             $streamFactory = $factory;

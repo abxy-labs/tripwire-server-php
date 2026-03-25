@@ -9,7 +9,7 @@ The Tripwire PHP library provides convenient access to the Tripwire API from app
 The library also provides:
 
 - a fast configuration path using `TRIPWIRE_SECRET_KEY`
-- PSR-18 transport support with autodiscovery by default
+- a bundled PSR-18 transport stack with support for custom PSR clients and factories
 - structured API errors and built-in sealed token verification
 
 ## Documentation
@@ -116,4 +116,3 @@ try {
 ## Support
 
 If you need help integrating Tripwire, start with [tripwirejs.com/docs](https://tripwirejs.com/docs).
-
