@@ -105,8 +105,8 @@ final class ClientTest extends TestCase
             'data' => [
                 [
                     ...$firstPage['data'][0],
-                    'id' => 'sid_example_two',
-                    'latestEventId' => 'evt_example_two',
+                    'id' => 'sid_123456789abcdefghjkmnpqrst',
+                    'latestEventId' => 'evt_3456789abcdefghjkmnpqrstvw',
                     'lastScoredAt' => '2026-03-24T20:01:05.000Z',
                 ],
             ],
@@ -134,7 +134,7 @@ final class ClientTest extends TestCase
             $ids[] = $item->id;
         }
 
-        self::assertSame(['sid_example_one', 'sid_example_two'], $ids);
+        self::assertSame(['sid_0123456789abcdefghjkmnpqrs', 'sid_123456789abcdefghjkmnpqrst'], $ids);
     }
 
     public function testFetchesSessionDetailResource(): void
@@ -142,7 +142,7 @@ final class ClientTest extends TestCase
         $fixture = FixtureLoader::load('public-api/sessions/detail.json');
         $factory = new Psr17Factory();
         $httpClient = new TestHttpClient(static function (RequestInterface $request) use ($fixture) {
-            self::assertStringContainsString('/v1/sessions/sid_example_one', (string) $request->getUri());
+            self::assertStringContainsString('/v1/sessions/sid_0123456789abcdefghjkmnpqrs', (string) $request->getUri());
             return JsonResponse::create($fixture);
         });
 
@@ -153,7 +153,7 @@ final class ClientTest extends TestCase
             streamFactory: $factory,
         );
 
-        self::assertSame($fixture['data']['id'], $client->sessions()->get('sid_example_one')->id);
+        self::assertSame($fixture['data']['id'], $client->sessions()->get('sid_0123456789abcdefghjkmnpqrs')->id);
     }
 
     public function testListsAndFetchesFingerprints(): void
@@ -162,7 +162,7 @@ final class ClientTest extends TestCase
         $detailFixture = FixtureLoader::load('public-api/fingerprints/detail.json');
         $factory = new Psr17Factory();
         $httpClient = new TestHttpClient(static function (RequestInterface $request) use ($listFixture, $detailFixture) {
-            if (str_contains((string) $request->getUri(), '/v1/fingerprints/vis_example_one')) {
+            if (str_contains((string) $request->getUri(), '/v1/fingerprints/vid_456789abcdefghjkmnpqrstvwx')) {
                 return JsonResponse::create($detailFixture);
             }
 
@@ -179,7 +179,7 @@ final class ClientTest extends TestCase
         $page = $client->fingerprints()->list();
         self::assertFalse($page->hasMore);
         self::assertSame($listFixture['data'][0]['id'], $page->items[0]->id);
-        self::assertSame($detailFixture['data']['id'], $client->fingerprints()->get('vis_example_one')->id);
+        self::assertSame($detailFixture['data']['id'], $client->fingerprints()->get('vid_456789abcdefghjkmnpqrstvwx')->id);
     }
 
     public function testSupportsTeamsAndApiKeyManagementEndpoints(): void
@@ -187,15 +187,16 @@ final class ClientTest extends TestCase
         $teamFixture = FixtureLoader::load('public-api/teams/team.json');
         $createKeyFixture = FixtureLoader::load('public-api/teams/api-key-create.json');
         $listKeyFixture = FixtureLoader::load('public-api/teams/api-key-list.json');
+        $rotateKeyFixture = FixtureLoader::load('public-api/teams/api-key-rotate.json');
 
         $factory = new Psr17Factory();
-        $httpClient = new TestHttpClient(static function (RequestInterface $request) use ($teamFixture, $createKeyFixture, $listKeyFixture) {
+        $httpClient = new TestHttpClient(static function (RequestInterface $request) use ($teamFixture, $createKeyFixture, $listKeyFixture, $rotateKeyFixture) {
             $url = (string) $request->getUri();
 
-            if (str_ends_with($url, '/api-keys/key_example/rotations')) {
-                return JsonResponse::create($createKeyFixture);
+            if (str_ends_with($url, '/api-keys/key_6789abcdefghjkmnpqrstvwxyz/rotations')) {
+                return JsonResponse::create($rotateKeyFixture, 201);
             }
-            if (str_ends_with($url, '/api-keys/key_example')) {
+            if (str_ends_with($url, '/api-keys/key_6789abcdefghjkmnpqrstvwxyz')) {
                 return new \Nyholm\Psr7\Response(204);
             }
             if (str_ends_with($url, '/api-keys') && $request->getMethod() === 'POST') {
@@ -215,13 +216,13 @@ final class ClientTest extends TestCase
             streamFactory: $factory,
         );
 
-        self::assertSame($teamFixture['data']['id'], $client->teams()->get('team_example')->id);
+        self::assertSame($teamFixture['data']['id'], $client->teams()->get('team_56789abcdefghjkmnpqrstvwxy')->id);
         self::assertSame($teamFixture['data']['id'], $client->teams()->create('Example Team', 'example-team')->id);
-        self::assertSame($teamFixture['data']['id'], $client->teams()->update('team_example', name: 'Example Team')->id);
-        self::assertSame($createKeyFixture['data']['id'], $client->teams()->apiKeys()->create('team_example', name: 'Production')->id);
-        self::assertSame($listKeyFixture['data'][0]['id'], $client->teams()->apiKeys()->list('team_example')->items[0]->id);
-        $client->teams()->apiKeys()->revoke('team_example', 'key_example');
-        self::assertSame($createKeyFixture['data']['id'], $client->teams()->apiKeys()->rotate('team_example', 'key_example')->id);
+        self::assertSame($teamFixture['data']['id'], $client->teams()->update('team_56789abcdefghjkmnpqrstvwxy', name: 'Example Team')->id);
+        self::assertSame($createKeyFixture['data']['id'], $client->teams()->apiKeys()->create('team_56789abcdefghjkmnpqrstvwxy', name: 'Production')->id);
+        self::assertSame($listKeyFixture['data'][0]['id'], $client->teams()->apiKeys()->list('team_56789abcdefghjkmnpqrstvwxy')->items[0]->id);
+        $client->teams()->apiKeys()->revoke('team_56789abcdefghjkmnpqrstvwxy', 'key_6789abcdefghjkmnpqrstvwxyz');
+        self::assertSame($rotateKeyFixture['data']['id'], $client->teams()->apiKeys()->rotate('team_56789abcdefghjkmnpqrstvwxy', 'key_6789abcdefghjkmnpqrstvwxyz')->id);
     }
 
     public function testParsesPublicApiErrorsIntoTripwireApiError(): void
@@ -245,7 +246,7 @@ final class ClientTest extends TestCase
             $client->sessions()->list(limit: 999);
             self::fail('Expected TripwireApiError to be thrown.');
         } catch (TripwireApiError $error) {
-            self::assertSame(400, $error->status);
+            self::assertSame(422, $error->status);
             self::assertSame($fixture['error']['code'], $error->code);
             self::assertSame($fixture['error']['requestId'], $error->requestId);
             self::assertSame($fixture['error']['details']['fieldErrors'], $error->fieldErrors);
@@ -253,4 +254,3 @@ final class ClientTest extends TestCase
         }
     }
 }
-
