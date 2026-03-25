@@ -95,7 +95,7 @@ final class LiveSmokeTest extends TestCase
         try {
             $client->teams()->apiKeys()->revoke($teamId, $keyId);
         } catch (TripwireApiError $error) {
-            if ($error->status === 404 || $error->code === 'resource.not_found') {
+            if ($error->status === 404 || $error->code === 'request.not_found') {
                 return;
             }
 
