@@ -4,7 +4,7 @@
 ![PHP 8.1+](https://img.shields.io/badge/php-%E2%89%A58.1-777BB4?logo=php&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/license-MIT-0f766e.svg)
 
-The Tripwire PHP library provides convenient access to the Tripwire API from applications written in PHP. It includes a framework-agnostic client for Sessions, Fingerprints, Teams, Team API key management, and sealed token verification.
+The Tripwire PHP library provides convenient access to the Tripwire API from applications written in PHP. It includes a framework-agnostic client for Sessions, visitor fingerprints, Teams, Team API key management, and sealed token verification.
 
 The library also provides:
 
@@ -40,7 +40,9 @@ use Tripwire\Server\Client;
 $client = new Client(secretKey: getenv('TRIPWIRE_SECRET_KEY') ?: null);
 
 $page = $client->sessions()->list(verdict: 'bot', limit: 25);
-$session = $client->sessions()->get('sid_123');
+$session = $client->sessions()->get('sid_0123456789abcdefghjkmnpqrs');
+
+echo $session->decision['automation_status'] . ' ' . ($session->highlights[0]['summary'] ?? '') . PHP_EOL;
 ```
 
 ### Sealed token verification
@@ -57,7 +59,7 @@ if (!$result->ok) {
     return;
 }
 
-echo $result->data?->verdict . ' ' . $result->data?->score;
+echo $result->data?->decision['verdict'] . ' ' . $result->data?->decision['risk_score'];
 ```
 
 ### Pagination
@@ -66,16 +68,16 @@ echo $result->data?->verdict . ' ' . $result->data?->score;
 <?php
 
 foreach ($client->sessions()->iterate(search: 'signup') as $session) {
-    echo $session->id . ' ' . $session->latestResult->verdict . PHP_EOL;
+    echo $session->id . ' ' . $session->latest_decision['verdict'] . PHP_EOL;
 }
 ```
 
-### Fingerprints
+### Visitor fingerprints
 
 ```php
 <?php
 
-$fingerprint = $client->fingerprints()->get('vis_123');
+$fingerprint = $client->fingerprints()->get('vid_0123456789abcdefghjkmnpqrs');
 echo $fingerprint->id;
 ```
 
@@ -84,8 +86,8 @@ echo $fingerprint->id;
 ```php
 <?php
 
-$team = $client->teams()->get('team_123');
-$updated = $client->teams()->update('team_123', name: 'New Name');
+$team = $client->teams()->get('team_0123456789abcdefghjkmnpqrs');
+$updated = $client->teams()->update('team_0123456789abcdefghjkmnpqrs', name: 'New Name');
 
 echo $updated->name;
 ```
@@ -95,8 +97,8 @@ echo $updated->name;
 ```php
 <?php
 
-$created = $client->teams()->apiKeys()->create('team_123', name: 'Production');
-$client->teams()->apiKeys()->revoke('team_123', $created->id);
+$created = $client->teams()->apiKeys()->create('team_0123456789abcdefghjkmnpqrs', name: 'Production', environment: 'live');
+$client->teams()->apiKeys()->revoke('team_0123456789abcdefghjkmnpqrs', $created->id);
 ```
 
 ### Error handling

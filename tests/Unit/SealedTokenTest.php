@@ -17,6 +17,7 @@ final class SealedTokenTest extends TestCase
         $fixture = FixtureLoader::load('sealed-token/vector.v1.json');
         $verified = SealedToken::verify($fixture['token'], $fixture['secretKey']);
 
+        self::assertSame($fixture['payload']['session_id'], $verified->session_id);
         self::assertSame($fixture['payload'], $verified->toArray());
     }
 
@@ -55,4 +56,3 @@ final class SealedTokenTest extends TestCase
         }
     }
 }
-

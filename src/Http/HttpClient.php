@@ -62,15 +62,15 @@ final class HttpClient
             if (is_array($payload) && isset($payload['error']) && is_array($payload['error'])) {
                 $error = $payload['error'];
                 $details = isset($error['details']) && is_array($error['details']) ? $error['details'] : [];
-                $fieldErrors = isset($details['fieldErrors']) && is_array($details['fieldErrors']) ? $details['fieldErrors'] : [];
+                $fieldErrors = isset($details['fields']) && is_array($details['fields']) ? $details['fields'] : [];
 
                 throw new TripwireApiError(
                     $status,
                     (string) ($error['code'] ?? 'request.failed'),
                     (string) ($error['message'] ?? ($payloadText !== '' ? $payloadText : 'Tripwire request failed.')),
-                    $requestId !== '' ? $requestId : (isset($error['requestId']) ? (string) $error['requestId'] : null),
+                    $requestId !== '' ? $requestId : (isset($error['request_id']) ? (string) $error['request_id'] : null),
                     $fieldErrors,
-                    isset($error['docsUrl']) ? (string) $error['docsUrl'] : null,
+                    isset($error['docs_url']) ? (string) $error['docs_url'] : null,
                     $payload,
                 );
             }
@@ -154,4 +154,3 @@ final class HttpClient
         }
     }
 }
-

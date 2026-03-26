@@ -15,9 +15,9 @@ final class TripwireApiError extends RuntimeException
         public readonly int $status,
         public readonly string $errorCode,
         string $message,
-        public readonly ?string $requestId = null,
-        public readonly array $fieldErrors = [],
-        public readonly ?string $docsUrl = null,
+        public readonly ?string $request_id = null,
+        public readonly array $field_errors = [],
+        public readonly ?string $docs_url = null,
         public readonly mixed $body = null,
     ) {
         parent::__construct($message);

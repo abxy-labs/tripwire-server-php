@@ -7,29 +7,25 @@ namespace Tripwire\Server\Resource;
 final class VerifiedTripwireToken
 {
     /**
-     * @param array<string, mixed> $raw
+     * @param array<string, mixed> $decision
+     * @param array<string, mixed> $request
+     * @param array<string, mixed>|null $visitor_fingerprint
      * @param array<int, array<string, mixed>> $signals
-     * @param array<string, int> $categoryScores
-     * @param array<string, mixed> $metadata
+     * @param array<string, mixed> $score_breakdown
+     * @param array<string, mixed> $attribution
+     * @param array<string, mixed>|null $embed
+     * @param array<string, mixed> $raw
      */
     public function __construct(
-        public readonly string $eventId,
-        public readonly string $sessionId,
-        public readonly string $verdict,
-        public readonly int $score,
-        public readonly ?int $manipulationScore,
-        public readonly ?string $manipulationVerdict,
-        public readonly ?int $evaluationDuration,
-        public readonly int $scoredAt,
-        public readonly array $metadata,
+        public readonly string $object,
+        public readonly string $session_id,
+        public readonly array $decision,
+        public readonly array $request,
+        public readonly ?array $visitor_fingerprint,
         public readonly array $signals,
-        public readonly array $categoryScores,
-        public readonly mixed $botAttribution,
-        public readonly ?string $visitorId,
-        public readonly ?int $visitorIdConfidence,
-        public readonly mixed $embedContext,
-        public readonly ?string $phase,
-        public readonly ?bool $provisional,
+        public readonly array $score_breakdown,
+        public readonly array $attribution,
+        public readonly ?array $embed,
         public readonly array $raw,
     ) {
     }
@@ -39,34 +35,16 @@ final class VerifiedTripwireToken
      */
     public static function fromArray(array $data): self
     {
-        $categoryScores = [];
-        foreach ((array) ($data['categoryScores'] ?? []) as $key => $value) {
-            $categoryScores[(string) $key] = (int) $value;
-        }
-
-        $signals = [];
-        foreach ((array) ($data['signals'] ?? []) as $signal) {
-            $signals[] = (array) $signal;
-        }
-
         return new self(
-            (string) $data['eventId'],
-            (string) $data['sessionId'],
-            (string) $data['verdict'],
-            (int) $data['score'],
-            array_key_exists('manipulationScore', $data) ? ($data['manipulationScore'] === null ? null : (int) $data['manipulationScore']) : null,
-            isset($data['manipulationVerdict']) ? (string) $data['manipulationVerdict'] : null,
-            array_key_exists('evaluationDuration', $data) ? ($data['evaluationDuration'] === null ? null : (int) $data['evaluationDuration']) : null,
-            (int) $data['scoredAt'],
-            (array) ($data['metadata'] ?? []),
-            $signals,
-            $categoryScores,
-            $data['botAttribution'] ?? null,
-            isset($data['visitorId']) ? (string) $data['visitorId'] : null,
-            array_key_exists('visitorIdConfidence', $data) ? ($data['visitorIdConfidence'] === null ? null : (int) $data['visitorIdConfidence']) : null,
-            $data['embedContext'] ?? null,
-            isset($data['phase']) ? (string) $data['phase'] : null,
-            array_key_exists('provisional', $data) ? ($data['provisional'] === null ? null : (bool) $data['provisional']) : null,
+            (string) $data['object'],
+            (string) $data['session_id'],
+            (array) $data['decision'],
+            (array) $data['request'],
+            isset($data['visitor_fingerprint']) && is_array($data['visitor_fingerprint']) ? $data['visitor_fingerprint'] : null,
+            array_map(static fn (mixed $signal): array => (array) $signal, (array) ($data['signals'] ?? [])),
+            isset($data['score_breakdown']) && is_array($data['score_breakdown']) ? $data['score_breakdown'] : [],
+            isset($data['attribution']) && is_array($data['attribution']) ? $data['attribution'] : [],
+            isset($data['embed']) && is_array($data['embed']) ? $data['embed'] : null,
             $data,
         );
     }

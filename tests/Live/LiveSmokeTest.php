@@ -51,10 +51,10 @@ final class LiveSmokeTest extends TestCase
             $created = $client->teams()->apiKeys()->create(
                 $teamId,
                 name: 'sdk-smoke-' . base_convert((string) (int) floor(microtime(true) * 1000), 10, 36),
-                isTest: true,
+                environment: 'test',
             );
             $createdKeyId = $created->id;
-            self::assertStringStartsWith('sk_', $created->secretKey);
+            self::assertStringStartsWith('sk_', $created->secret_key);
 
             $listedKey = $this->findApiKey($client, $teamId, $created->id);
             self::assertNotNull($listedKey);
@@ -62,12 +62,12 @@ final class LiveSmokeTest extends TestCase
 
             $rotated = $client->teams()->apiKeys()->rotate($teamId, $created->id);
             $rotatedKeyId = $rotated->id;
-            self::assertStringStartsWith('sk_', $rotated->secretKey);
+            self::assertStringStartsWith('sk_', $rotated->secret_key);
 
             $fixture = FixtureLoader::load('sealed-token/vector.v1.json');
             $verified = SealedToken::safeVerify($fixture['token'], $fixture['secretKey']);
             self::assertTrue($verified->ok);
-            self::assertSame($fixture['payload']['eventId'], $verified->data?->eventId);
+            self::assertSame($fixture['payload']['session_id'], $verified->data?->session_id);
         } finally {
             $this->bestEffortRevoke($client, $teamId, $rotatedKeyId);
             if ($createdKeyId !== $rotatedKeyId) {
@@ -114,7 +114,7 @@ final class LiveSmokeTest extends TestCase
                     return $item;
                 }
             }
-            $cursor = $page->hasMore ? $page->nextCursor : null;
+            $cursor = $page->has_more ? $page->next_cursor : null;
         } while ($cursor !== null);
 
         return null;

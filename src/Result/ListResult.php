@@ -12,9 +12,8 @@ final class ListResult
     public function __construct(
         public readonly array $items,
         public readonly int $limit,
-        public readonly bool $hasMore,
-        public readonly ?string $nextCursor = null,
+        public readonly bool $has_more,
+        public readonly ?string $next_cursor = null,
     ) {
     }
 }
-
