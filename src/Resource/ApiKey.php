@@ -7,20 +7,20 @@ namespace Tripwire\Server\Resource;
 class ApiKey
 {
     /**
-     * @param array<int, string>|null $allowedOrigins
+     * @param array<int, string>|null $allowed_origins
      */
     public function __construct(
         public readonly string $object,
         public readonly string $id,
-        public readonly string $key,
+        public readonly string $public_key,
         public readonly string $name,
-        public readonly bool $isTest,
-        public readonly ?array $allowedOrigins,
-        public readonly ?int $rateLimit,
+        public readonly string $environment,
+        public readonly ?array $allowed_origins,
+        public readonly ?int $rate_limit,
         public readonly string $status,
-        public readonly string $createdAt,
-        public readonly ?string $rotatedAt,
-        public readonly ?string $revokedAt,
+        public readonly string $created_at,
+        public readonly ?string $rotated_at,
+        public readonly ?string $revoked_at,
     ) {
     }
 
@@ -32,15 +32,15 @@ class ApiKey
         return new self(
             (string) $data['object'],
             (string) $data['id'],
-            (string) $data['key'],
+            (string) $data['public_key'],
             (string) $data['name'],
-            (bool) $data['isTest'],
-            isset($data['allowedOrigins']) ? array_map(static fn (mixed $value): string => (string) $value, (array) $data['allowedOrigins']) : null,
-            array_key_exists('rateLimit', $data) ? ($data['rateLimit'] === null ? null : (int) $data['rateLimit']) : null,
+            (string) $data['environment'],
+            isset($data['allowed_origins']) ? array_map(static fn (mixed $value): string => (string) $value, (array) $data['allowed_origins']) : null,
+            array_key_exists('rate_limit', $data) ? ($data['rate_limit'] === null ? null : (int) $data['rate_limit']) : null,
             (string) $data['status'],
-            (string) $data['createdAt'],
-            isset($data['rotatedAt']) ? (string) $data['rotatedAt'] : null,
-            isset($data['revokedAt']) ? (string) $data['revokedAt'] : null,
+            (string) $data['created_at'],
+            isset($data['rotated_at']) ? (string) $data['rotated_at'] : null,
+            isset($data['revoked_at']) ? (string) $data['revoked_at'] : null,
         );
     }
 
@@ -52,16 +52,15 @@ class ApiKey
         return [
             'object' => $this->object,
             'id' => $this->id,
-            'key' => $this->key,
+            'public_key' => $this->public_key,
             'name' => $this->name,
-            'isTest' => $this->isTest,
-            'allowedOrigins' => $this->allowedOrigins,
-            'rateLimit' => $this->rateLimit,
+            'environment' => $this->environment,
+            'allowed_origins' => $this->allowed_origins,
+            'rate_limit' => $this->rate_limit,
             'status' => $this->status,
-            'createdAt' => $this->createdAt,
-            'rotatedAt' => $this->rotatedAt,
-            'revokedAt' => $this->revokedAt,
+            'created_at' => $this->created_at,
+            'rotated_at' => $this->rotated_at,
+            'revoked_at' => $this->revoked_at,
         ];
     }
 }
-

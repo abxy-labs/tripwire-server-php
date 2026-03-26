@@ -6,14 +6,16 @@ namespace Tripwire\Server\Resource;
 
 final class SessionSummary
 {
+    /**
+     * @param array<string, mixed> $latest_decision
+     * @param array<string, mixed>|null $visitor_fingerprint
+     */
     public function __construct(
         public readonly string $object,
         public readonly string $id,
-        public readonly ?string $createdAt,
-        public readonly string $latestEventId,
-        public readonly ResultSummary $latestResult,
-        public readonly ?FingerprintReference $fingerprint,
-        public readonly string $lastScoredAt,
+        public readonly ?string $created_at,
+        public readonly array $latest_decision,
+        public readonly ?array $visitor_fingerprint,
     ) {
     }
 
@@ -25,11 +27,9 @@ final class SessionSummary
         return new self(
             (string) $data['object'],
             (string) $data['id'],
-            isset($data['createdAt']) ? (string) $data['createdAt'] : null,
-            (string) $data['latestEventId'],
-            ResultSummary::fromArray((array) $data['latestResult']),
-            isset($data['fingerprint']) && is_array($data['fingerprint']) ? FingerprintReference::fromArray($data['fingerprint']) : null,
-            (string) $data['lastScoredAt'],
+            isset($data['created_at']) ? (string) $data['created_at'] : null,
+            (array) $data['latest_decision'],
+            isset($data['visitor_fingerprint']) && is_array($data['visitor_fingerprint']) ? $data['visitor_fingerprint'] : null,
         );
     }
 
@@ -41,12 +41,9 @@ final class SessionSummary
         return [
             'object' => $this->object,
             'id' => $this->id,
-            'createdAt' => $this->createdAt,
-            'latestEventId' => $this->latestEventId,
-            'latestResult' => $this->latestResult->toArray(),
-            'fingerprint' => $this->fingerprint?->toArray(),
-            'lastScoredAt' => $this->lastScoredAt,
+            'created_at' => $this->created_at,
+            'latest_decision' => $this->latest_decision,
+            'visitor_fingerprint' => $this->visitor_fingerprint,
         ];
     }
 }
-

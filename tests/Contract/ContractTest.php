@@ -52,17 +52,17 @@ final class ContractTest extends TestCase
     public function testExpectedSuccessFixturesExist(): void
     {
         $fixtures = [
-            'public-api/sessions/list.json',
-            'public-api/sessions/detail.json',
-            'public-api/fingerprints/list.json',
-            'public-api/fingerprints/detail.json',
-            'public-api/teams/team.json',
-            'public-api/teams/team-create.json',
-            'public-api/teams/team-update.json',
-            'public-api/teams/api-key-create.json',
-            'public-api/teams/api-key-list.json',
-            'public-api/teams/api-key-rotate.json',
-            'public-api/teams/api-key-revoke.json',
+            'api/sessions/list.json',
+            'api/sessions/detail.json',
+            'api/fingerprints/list.json',
+            'api/fingerprints/detail.json',
+            'api/teams/team.json',
+            'api/teams/team-create.json',
+            'api/teams/team-update.json',
+            'api/teams/api-key-create.json',
+            'api/teams/api-key-list.json',
+            'api/teams/api-key-rotate.json',
+            'api/teams/api-key-revoke.json',
         ];
 
         foreach ($fixtures as $relativePath) {
@@ -88,11 +88,42 @@ final class ContractTest extends TestCase
         );
         self::assertSame(['active', 'suspended', 'deleted'], $schemas['TeamStatus']['enum']);
         self::assertSame(['active', 'revoked', 'rotated'], $schemas['ApiKeyStatus']['enum']);
-        self::assertContains('ipIntel', $schemas['SessionDetail']['required']);
-        self::assertContains('allowedOrigins', $schemas['ApiKey']['required']);
-        self::assertContains('rateLimit', $schemas['ApiKey']['required']);
-        self::assertContains('rotatedAt', $schemas['ApiKey']['required']);
-        self::assertContains('revokedAt', $schemas['ApiKey']['required']);
+        self::assertContains('decision', $schemas['SessionDetail']['required']);
+        self::assertContains('highlights', $schemas['SessionDetail']['required']);
+        self::assertContains('automation', $schemas['SessionDetail']['required']);
+        self::assertContains('web_bot_auth', $schemas['SessionDetail']['required']);
+        self::assertContains('runtime_integrity', $schemas['SessionDetail']['required']);
+        self::assertContains('visitor_fingerprint', $schemas['SessionDetail']['required']);
+        self::assertContains('connection_fingerprint', $schemas['SessionDetail']['required']);
+        self::assertContains('previous_decisions', $schemas['SessionDetail']['required']);
+        self::assertContains('request', $schemas['SessionDetail']['required']);
+        self::assertContains('browser', $schemas['SessionDetail']['required']);
+        self::assertContains('device', $schemas['SessionDetail']['required']);
+        self::assertContains('network', $schemas['SessionDetail']['required']);
+        self::assertContains('analysis_coverage', $schemas['SessionDetail']['required']);
+        self::assertContains('signals_fired', $schemas['SessionDetail']['required']);
+        self::assertContains('client_telemetry', $schemas['SessionDetail']['required']);
+        self::assertSame(
+            ['$ref' => '#/components/schemas/SessionDetailRequest'],
+            $schemas['SessionDetail']['properties']['request'],
+        );
+        self::assertSame(
+            ['$ref' => '#/components/schemas/SessionClientTelemetry'],
+            $schemas['SessionDetail']['properties']['client_telemetry'],
+        );
+        self::assertSame(
+            ['anyOf' => [['$ref' => '#/components/schemas/SessionAutomation'], ['type' => 'null']]],
+            $schemas['SessionDetail']['properties']['automation'],
+        );
+        self::assertSame(
+            ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/SessionSignalFired']],
+            $schemas['SessionDetail']['properties']['signals_fired'],
+        );
+        self::assertSame('string', $schemas['SessionSignalFired']['properties']['signal']['type']);
+        self::assertContains('allowed_origins', $schemas['ApiKey']['required']);
+        self::assertContains('rate_limit', $schemas['ApiKey']['required']);
+        self::assertContains('rotated_at', $schemas['ApiKey']['required']);
+        self::assertContains('revoked_at', $schemas['ApiKey']['required']);
         self::assertArrayNotHasKey('CollectBatchResponse', $schemas);
     }
 
@@ -102,8 +133,8 @@ final class ContractTest extends TestCase
 
         self::assertSame('listSessions', $paths['/v1/sessions']['get']['operationId']);
         self::assertSame(['Sessions'], $paths['/v1/sessions']['get']['tags']);
-        self::assertSame('getFingerprint', $paths['/v1/fingerprints/{visitorId}']['get']['operationId']);
-        self::assertSame(['Fingerprints'], $paths['/v1/fingerprints/{visitorId}']['get']['tags']);
+        self::assertSame('getVisitorFingerprint', $paths['/v1/fingerprints/{visitorId}']['get']['operationId']);
+        self::assertSame(['Visitor fingerprints'], $paths['/v1/fingerprints/{visitorId}']['get']['tags']);
         self::assertSame('updateTeam', $paths['/v1/teams/{teamId}']['patch']['operationId']);
         self::assertSame(['Teams'], $paths['/v1/teams/{teamId}']['patch']['tags']);
         self::assertSame(

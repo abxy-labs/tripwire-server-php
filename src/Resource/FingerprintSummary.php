@@ -7,26 +7,18 @@ namespace Tripwire\Server\Resource;
 final class FingerprintSummary
 {
     /**
-     * @param array<int, int> $fingerprintVector
+     * @param array<string, mixed> $lifecycle
+     * @param array<string, mixed> $latest_request
+     * @param array<string, mixed> $storage
+     * @param array<string, mixed> $anchors
      */
     public function __construct(
         public readonly string $object,
         public readonly string $id,
-        public readonly string $firstSeenAt,
-        public readonly string $lastSeenAt,
-        public readonly int $seenCount,
-        public readonly string $lastUserAgent,
-        public readonly string $lastIp,
-        public readonly string $expiresAt,
-        public readonly ?string $anchorWebglHash,
-        public readonly ?string $anchorParamsHash,
-        public readonly ?string $anchorAudioHash,
-        public readonly array $fingerprintVector,
-        public readonly bool $hasCookie,
-        public readonly bool $hasLs,
-        public readonly bool $hasIdb,
-        public readonly bool $hasSw,
-        public readonly bool $hasWn,
+        public readonly array $lifecycle,
+        public readonly array $latest_request,
+        public readonly array $storage,
+        public readonly array $anchors,
     ) {
     }
 
@@ -38,21 +30,10 @@ final class FingerprintSummary
         return new self(
             (string) $data['object'],
             (string) $data['id'],
-            (string) $data['firstSeenAt'],
-            (string) $data['lastSeenAt'],
-            (int) $data['seenCount'],
-            (string) $data['lastUserAgent'],
-            (string) $data['lastIp'],
-            (string) $data['expiresAt'],
-            isset($data['anchorWebglHash']) ? (string) $data['anchorWebglHash'] : null,
-            isset($data['anchorParamsHash']) ? (string) $data['anchorParamsHash'] : null,
-            isset($data['anchorAudioHash']) ? (string) $data['anchorAudioHash'] : null,
-            array_map(static fn (mixed $value): int => (int) $value, (array) ($data['fingerprintVector'] ?? [])),
-            (bool) ($data['hasCookie'] ?? false),
-            (bool) ($data['hasLs'] ?? false),
-            (bool) ($data['hasIdb'] ?? false),
-            (bool) ($data['hasSw'] ?? false),
-            (bool) ($data['hasWn'] ?? false),
+            (array) $data['lifecycle'],
+            (array) $data['latest_request'],
+            (array) $data['storage'],
+            (array) $data['anchors'],
         );
     }
 
@@ -64,22 +45,10 @@ final class FingerprintSummary
         return [
             'object' => $this->object,
             'id' => $this->id,
-            'firstSeenAt' => $this->firstSeenAt,
-            'lastSeenAt' => $this->lastSeenAt,
-            'seenCount' => $this->seenCount,
-            'lastUserAgent' => $this->lastUserAgent,
-            'lastIp' => $this->lastIp,
-            'expiresAt' => $this->expiresAt,
-            'anchorWebglHash' => $this->anchorWebglHash,
-            'anchorParamsHash' => $this->anchorParamsHash,
-            'anchorAudioHash' => $this->anchorAudioHash,
-            'fingerprintVector' => $this->fingerprintVector,
-            'hasCookie' => $this->hasCookie,
-            'hasLs' => $this->hasLs,
-            'hasIdb' => $this->hasIdb,
-            'hasSw' => $this->hasSw,
-            'hasWn' => $this->hasWn,
+            'lifecycle' => $this->lifecycle,
+            'latest_request' => $this->latest_request,
+            'storage' => $this->storage,
+            'anchors' => $this->anchors,
         ];
     }
 }
-

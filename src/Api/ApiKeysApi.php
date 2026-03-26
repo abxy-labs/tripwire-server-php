@@ -14,14 +14,14 @@ final class ApiKeysApi
     public function __construct(private readonly HttpClient $http) {}
 
     /**
-     * @param array<int, string>|null $allowedOrigins
+     * @param array<int, string>|null $allowed_origins
      */
     public function create(
         string $teamId,
         ?string $name = null,
-        ?bool $isTest = null,
-        ?array $allowedOrigins = null,
-        ?int $rateLimit = null,
+        ?string $environment = null,
+        ?array $allowed_origins = null,
+        ?int $rate_limit = null,
     ): IssuedApiKey {
         $response = $this->http->requestJson(
             'POST',
@@ -29,9 +29,9 @@ final class ApiKeysApi
             [],
             $this->compact([
                 'name' => $name,
-                'isTest' => $isTest,
-                'allowedOrigins' => $allowedOrigins,
-                'rateLimit' => $rateLimit,
+                'environment' => $environment,
+                'allowed_origins' => $allowed_origins,
+                'rate_limit' => $rate_limit,
             ]),
         );
 
@@ -59,20 +59,18 @@ final class ApiKeysApi
         return new ListResult(
             $items,
             (int) $pagination['limit'],
-            (bool) $pagination['hasMore'],
-            isset($pagination['nextCursor']) ? (string) $pagination['nextCursor'] : null,
+            (bool) $pagination['has_more'],
+            isset($pagination['next_cursor']) ? (string) $pagination['next_cursor'] : null,
         );
     }
 
-    public function revoke(string $teamId, string $keyId): void
+    public function revoke(string $teamId, string $keyId): ApiKey
     {
-        $this->http->requestJson(
+        $response = $this->http->requestJson(
             'DELETE',
             '/v1/teams/' . rawurlencode($teamId) . '/api-keys/' . rawurlencode($keyId),
-            [],
-            null,
-            false,
         );
+        return ApiKey::fromArray((array) $response['data']);
     }
 
     public function rotate(string $teamId, string $keyId): IssuedApiKey
@@ -94,4 +92,3 @@ final class ApiKeysApi
         return array_filter($values, static fn (mixed $value): bool => $value !== null);
     }
 }
-

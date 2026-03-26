@@ -12,8 +12,8 @@ final class Team
         public readonly string $name,
         public readonly string $slug,
         public readonly string $status,
-        public readonly string $createdAt,
-        public readonly ?string $updatedAt,
+        public readonly string $created_at,
+        public readonly ?string $updated_at,
     ) {
     }
 
@@ -28,8 +28,8 @@ final class Team
             (string) $data['name'],
             (string) $data['slug'],
             (string) $data['status'],
-            (string) $data['createdAt'],
-            isset($data['updatedAt']) ? (string) $data['updatedAt'] : null,
+            (string) $data['created_at'],
+            isset($data['updated_at']) ? (string) $data['updated_at'] : null,
         );
     }
 
@@ -44,9 +44,8 @@ final class Team
             'name' => $this->name,
             'slug' => $this->slug,
             'status' => $this->status,
-            'createdAt' => $this->createdAt,
-            'updatedAt' => $this->updatedAt,
+            'created_at' => $this->created_at,
+            'updated_at' => $this->updated_at,
         ];
     }
 }
-

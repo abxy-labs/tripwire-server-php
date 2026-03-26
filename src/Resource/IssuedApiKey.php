@@ -7,34 +7,34 @@ namespace Tripwire\Server\Resource;
 final class IssuedApiKey extends ApiKey
 {
     /**
-     * @param array<int, string>|null $allowedOrigins
+     * @param array<int, string>|null $allowed_origins
      */
     public function __construct(
         string $object,
         string $id,
-        string $key,
+        string $public_key,
         string $name,
-        bool $isTest,
-        ?array $allowedOrigins,
-        ?int $rateLimit,
+        string $environment,
+        ?array $allowed_origins,
+        ?int $rate_limit,
         string $status,
-        string $createdAt,
-        ?string $rotatedAt,
-        ?string $revokedAt,
-        public readonly string $secretKey,
+        string $created_at,
+        ?string $rotated_at,
+        ?string $revoked_at,
+        public readonly string $secret_key,
     ) {
         parent::__construct(
             $object,
             $id,
-            $key,
+            $public_key,
             $name,
-            $isTest,
-            $allowedOrigins,
-            $rateLimit,
+            $environment,
+            $allowed_origins,
+            $rate_limit,
             $status,
-            $createdAt,
-            $rotatedAt,
-            $revokedAt,
+            $created_at,
+            $rotated_at,
+            $revoked_at,
         );
     }
 
@@ -46,16 +46,16 @@ final class IssuedApiKey extends ApiKey
         return new self(
             (string) $data['object'],
             (string) $data['id'],
-            (string) $data['key'],
+            (string) $data['public_key'],
             (string) $data['name'],
-            (bool) $data['isTest'],
-            isset($data['allowedOrigins']) ? array_map(static fn (mixed $value): string => (string) $value, (array) $data['allowedOrigins']) : null,
-            array_key_exists('rateLimit', $data) ? ($data['rateLimit'] === null ? null : (int) $data['rateLimit']) : null,
+            (string) $data['environment'],
+            isset($data['allowed_origins']) ? array_map(static fn (mixed $value): string => (string) $value, (array) $data['allowed_origins']) : null,
+            array_key_exists('rate_limit', $data) ? ($data['rate_limit'] === null ? null : (int) $data['rate_limit']) : null,
             (string) $data['status'],
-            (string) $data['createdAt'],
-            isset($data['rotatedAt']) ? (string) $data['rotatedAt'] : null,
-            isset($data['revokedAt']) ? (string) $data['revokedAt'] : null,
-            (string) $data['secretKey'],
+            (string) $data['created_at'],
+            isset($data['rotated_at']) ? (string) $data['rotated_at'] : null,
+            isset($data['revoked_at']) ? (string) $data['revoked_at'] : null,
+            (string) $data['secret_key'],
         );
     }
 
@@ -64,7 +64,6 @@ final class IssuedApiKey extends ApiKey
      */
     public function toArray(): array
     {
-        return parent::toArray() + ['secretKey' => $this->secretKey];
+        return parent::toArray() + ['secret_key' => $this->secret_key];
     }
 }
-

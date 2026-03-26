@@ -37,8 +37,8 @@ final class SessionsApi
         return new ListResult(
             $items,
             (int) $pagination['limit'],
-            (bool) $pagination['hasMore'],
-            isset($pagination['nextCursor']) ? (string) $pagination['nextCursor'] : null,
+            (bool) $pagination['has_more'],
+            isset($pagination['next_cursor']) ? (string) $pagination['next_cursor'] : null,
         );
     }
 
@@ -63,8 +63,7 @@ final class SessionsApi
             foreach ($page->items as $item) {
                 yield $item;
             }
-            $cursor = $page->hasMore ? $page->nextCursor : null;
+            $cursor = $page->has_more ? $page->next_cursor : null;
         } while ($cursor !== null);
     }
 }
-
