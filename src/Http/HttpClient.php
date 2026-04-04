@@ -13,9 +13,12 @@ use Tripwire\Server\Exception\TripwireApiError;
 final class HttpClient
 {
     private const SDK_CLIENT_HEADER = 'abxy/tripwire-server';
+    public const AUTH_SECRET = 'secret';
+    public const AUTH_NONE = 'none';
+    public const AUTH_BEARER = 'bearer';
 
     public function __construct(
-        private readonly string $secretKey,
+        private readonly ?string $secretKey,
         private readonly string $baseUrl,
         private readonly PsrHttpClientInterface $httpClient,
         private readonly RequestFactoryInterface $requestFactory,
@@ -35,11 +38,28 @@ final class HttpClient
         array $query = [],
         ?array $body = null,
         bool $expectContent = true,
+        string $authMode = self::AUTH_SECRET,
+        ?string $bearerToken = null,
     ): array {
         $request = $this->requestFactory->createRequest($method, $this->buildUrl($path, $query))
-            ->withHeader('Authorization', 'Bearer ' . $this->secretKey)
             ->withHeader('Accept', 'application/json')
             ->withHeader('X-Tripwire-Client', self::SDK_CLIENT_HEADER);
+
+        if ($authMode === self::AUTH_BEARER) {
+            if ($bearerToken === null || $bearerToken === '') {
+                throw new \Tripwire\Server\Exception\TripwireConfigurationError(
+                    'Missing bearer token for this Tripwire request.',
+                );
+            }
+            $request = $request->withHeader('Authorization', 'Bearer ' . $bearerToken);
+        } elseif ($authMode === self::AUTH_SECRET) {
+            if ($this->secretKey === null || $this->secretKey === '') {
+                throw new \Tripwire\Server\Exception\TripwireConfigurationError(
+                    'Missing Tripwire secret key. Pass secretKey explicitly or set TRIPWIRE_SECRET_KEY.',
+                );
+            }
+            $request = $request->withHeader('Authorization', 'Bearer ' . $this->secretKey);
+        }
 
         if ($this->userAgent !== null && $this->userAgent !== '') {
             $request = $request->withHeader('User-Agent', $this->userAgent);

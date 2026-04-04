@@ -28,6 +28,17 @@ final class ContractTest extends TestCase
             [
                 '/v1/fingerprints',
                 '/v1/fingerprints/{visitorId}',
+                '/v1/gate/agent-tokens/revoke',
+                '/v1/gate/agent-tokens/verify',
+                '/v1/gate/login-sessions',
+                '/v1/gate/login-sessions/consume',
+                '/v1/gate/registry',
+                '/v1/gate/registry/{serviceId}',
+                '/v1/gate/services',
+                '/v1/gate/services/{serviceId}',
+                '/v1/gate/sessions',
+                '/v1/gate/sessions/{gateSessionId}',
+                '/v1/gate/sessions/{gateSessionId}/ack',
                 '/v1/sessions',
                 '/v1/sessions/{sessionId}',
                 '/v1/teams',
@@ -56,6 +67,20 @@ final class ContractTest extends TestCase
             'api/sessions/detail.json',
             'api/fingerprints/list.json',
             'api/fingerprints/detail.json',
+            'api/gate/registry-list.json',
+            'api/gate/registry-detail.json',
+            'api/gate/services-list.json',
+            'api/gate/service-detail.json',
+            'api/gate/service-create.json',
+            'api/gate/service-update.json',
+            'api/gate/service-disable.json',
+            'api/gate/session-create.json',
+            'api/gate/session-poll.json',
+            'api/gate/session-ack.json',
+            'api/gate/login-session-create.json',
+            'api/gate/login-session-consume.json',
+            'api/gate/agent-token-verify.json',
+            'api/gate/agent-token-revoke.json',
             'api/teams/team.json',
             'api/teams/team-create.json',
             'api/teams/team-update.json',
@@ -124,6 +149,8 @@ final class ContractTest extends TestCase
         self::assertContains('rate_limit', $schemas['ApiKey']['required']);
         self::assertContains('rotated_at', $schemas['ApiKey']['required']);
         self::assertContains('revoked_at', $schemas['ApiKey']['required']);
+        self::assertArrayNotHasKey('team_id', $schemas['GateManagedService']['properties']);
+        self::assertArrayNotHasKey('webhook_secret', $schemas['GateManagedService']['properties']);
         self::assertArrayNotHasKey('CollectBatchResponse', $schemas);
     }
 
@@ -142,5 +169,11 @@ final class ContractTest extends TestCase
             $paths['/v1/teams/{teamId}/api-keys/{keyId}/rotations']['post']['operationId'],
         );
         self::assertSame(['API Keys'], $paths['/v1/teams/{teamId}/api-keys/{keyId}/rotations']['post']['tags']);
+        self::assertSame('createManagedGateService', $paths['/v1/gate/services']['post']['operationId']);
+        self::assertSame(['Gate'], $paths['/v1/gate/services']['post']['tags']);
+        self::assertSame('pollGateSession', $paths['/v1/gate/sessions/{gateSessionId}']['get']['operationId']);
+        self::assertSame(['Gate'], $paths['/v1/gate/sessions/{gateSessionId}']['get']['tags']);
+        self::assertSame('revokeGateAgentToken', $paths['/v1/gate/agent-tokens/revoke']['post']['operationId']);
+        self::assertSame(['Gate'], $paths['/v1/gate/agent-tokens/revoke']['post']['tags']);
     }
 }

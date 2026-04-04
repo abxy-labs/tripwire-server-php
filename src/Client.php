@@ -13,6 +13,7 @@ use Psr\Http\Client\ClientInterface as PsrHttpClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
 use Tripwire\Server\Api\FingerprintsApi;
+use Tripwire\Server\Api\GateApi;
 use Tripwire\Server\Api\SessionsApi;
 use Tripwire\Server\Api\TeamsApi;
 use Tripwire\Server\Exception\TripwireConfigurationError;
@@ -25,6 +26,7 @@ final class Client
     private SessionsApi $sessions;
     private FingerprintsApi $fingerprints;
     private TeamsApi $teams;
+    private GateApi $gate;
 
     /**
      * @throws TripwireConfigurationError
@@ -60,6 +62,7 @@ final class Client
         $this->sessions = new SessionsApi($transport);
         $this->fingerprints = new FingerprintsApi($transport);
         $this->teams = new TeamsApi($transport);
+        $this->gate = new GateApi($transport);
     }
 
     public function sessions(): SessionsApi
@@ -77,20 +80,19 @@ final class Client
         return $this->teams;
     }
 
-    private function resolveSecretKey(?string $secretKey): string
+    public function gate(): GateApi
+    {
+        return $this->gate;
+    }
+
+    private function resolveSecretKey(?string $secretKey): ?string
     {
         $resolved = $secretKey;
         if ($resolved === null || $resolved === '') {
             $resolved = getenv('TRIPWIRE_SECRET_KEY') ?: null;
         }
 
-        if ($resolved === null || $resolved === '') {
-            throw new TripwireConfigurationError(
-                'Missing Tripwire secret key. Pass secretKey explicitly or set TRIPWIRE_SECRET_KEY.',
-            );
-        }
-
-        return $resolved;
+        return ($resolved === null || $resolved === '') ? null : $resolved;
     }
 
     /**
