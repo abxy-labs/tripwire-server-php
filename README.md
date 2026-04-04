@@ -4,13 +4,14 @@
 ![PHP 8.1+](https://img.shields.io/badge/php-%E2%89%A58.1-777BB4?logo=php&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/license-MIT-0f766e.svg)
 
-The Tripwire PHP library provides convenient access to the Tripwire API from applications written in PHP. It includes a framework-agnostic client for Sessions, visitor fingerprints, Teams, Team API key management, and sealed token verification.
+The Tripwire PHP library provides convenient access to the Tripwire API from applications written in PHP. It includes a framework-agnostic client for Sessions, visitor fingerprints, Teams, Gate, Team API key management, sealed token verification, and Gate delivery/webhook helpers.
 
 The library also provides:
 
 - a fast configuration path using `TRIPWIRE_SECRET_KEY`
+- public, bearer-token, and secret-key auth modes for Gate flows
 - a bundled PSR-18 transport stack with support for custom PSR clients and factories
-- structured API errors and built-in sealed token verification
+- structured API errors, built-in sealed token verification, and Gate delivery/webhook helpers
 
 ## Documentation
 
@@ -30,7 +31,7 @@ composer require abxy/tripwire-server
 
 ## Usage
 
-The library needs to be configured with your account's secret key. Set `TRIPWIRE_SECRET_KEY` in your environment or pass `secretKey` directly:
+The client can be created without a secret key for public or bearer-auth Gate flows. Secret-auth routes use `TRIPWIRE_SECRET_KEY` or `secretKey`:
 
 ```php
 <?php
@@ -43,6 +44,25 @@ $page = $client->sessions()->list(verdict: 'bot', limit: 25);
 $session = $client->sessions()->get('sid_0123456789abcdefghjkmnpqrs');
 
 echo $session->decision['automation_status'] . ' ' . ($session->highlights[0]['summary'] ?? '') . PHP_EOL;
+```
+
+### Gate APIs
+
+```php
+<?php
+
+use Tripwire\Server\Client;
+use Tripwire\Server\GateDelivery;
+
+$client = new Client();
+$services = $client->gate()->registry()->list();
+$session = $client->gate()->sessions()->create(
+    serviceId: 'tripwire',
+    accountName: 'my-project',
+    delivery: GateDelivery::createDeliveryKeyPair()['delivery'],
+);
+
+echo $services[0]->id . ' ' . $session->consent_url . PHP_EOL;
 ```
 
 ### Sealed token verification
@@ -60,6 +80,26 @@ if (!$result->ok) {
 }
 
 echo $result->data?->decision['verdict'] . ' ' . $result->data?->decision['risk_score'];
+```
+
+### Gate delivery and webhook helpers
+
+```php
+<?php
+
+use Tripwire\Server\GateDelivery;
+
+$keyPair = GateDelivery::createDeliveryKeyPair();
+$response = GateDelivery::createGateApprovedWebhookResponse([
+    'delivery' => $keyPair['delivery'],
+    'outputs' => [
+        'TRIPWIRE_PUBLISHABLE_KEY' => 'pk_live_...',
+        'TRIPWIRE_SECRET_KEY' => 'sk_live_...',
+    ],
+]);
+$payload = GateDelivery::decryptGateDeliveryEnvelope($keyPair['private_key'], $response['encrypted_delivery']);
+
+echo $payload['outputs']['TRIPWIRE_SECRET_KEY'] . PHP_EOL;
 ```
 
 ### Pagination
