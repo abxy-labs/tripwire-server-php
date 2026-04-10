@@ -8,6 +8,27 @@ use PHPUnit\Framework\TestCase;
 
 final class ContractTest extends TestCase
 {
+    private function withoutExamples(mixed $value): mixed
+    {
+        if (!is_array($value)) {
+            return $value;
+        }
+
+        if (array_is_list($value)) {
+            return array_map($this->withoutExamples(...), $value);
+        }
+
+        $result = [];
+        foreach ($value as $key => $item) {
+            if ($key === 'example') {
+                continue;
+            }
+            $result[$key] = $this->withoutExamples($item);
+        }
+
+        return $result;
+    }
+
     private function readSpec(): array
     {
         return json_decode(
@@ -104,9 +125,9 @@ final class ContractTest extends TestCase
         self::assertSame('^team_[0123456789abcdefghjkmnpqrstvwxyz]{26}$', $schemas['TeamId']['pattern']);
         self::assertSame('^key_[0123456789abcdefghjkmnpqrstvwxyz]{26}$', $schemas['ApiKeyId']['pattern']);
 
-        self::assertSame(['$ref' => '#/components/schemas/SessionId'], $schemas['SessionSummary']['properties']['id']);
-        self::assertSame(['$ref' => '#/components/schemas/TeamStatus'], $schemas['Team']['properties']['status']);
-        self::assertSame(['$ref' => '#/components/schemas/ApiKeyStatus'], $schemas['ApiKey']['properties']['status']);
+        self::assertSame(['$ref' => '#/components/schemas/SessionId'], $this->withoutExamples($schemas['SessionSummary']['properties']['id']));
+        self::assertSame(['$ref' => '#/components/schemas/TeamStatus'], $this->withoutExamples($schemas['Team']['properties']['status']));
+        self::assertSame(['$ref' => '#/components/schemas/ApiKeyStatus'], $this->withoutExamples($schemas['ApiKey']['properties']['status']));
         self::assertSame(
             '#/components/schemas/KnownPublicErrorCode',
             $schemas['PublicError']['properties']['code']['x-tripwire-known-values-ref'],
@@ -130,19 +151,19 @@ final class ContractTest extends TestCase
         self::assertContains('client_telemetry', $schemas['SessionDetail']['required']);
         self::assertSame(
             ['$ref' => '#/components/schemas/SessionDetailRequest'],
-            $schemas['SessionDetail']['properties']['request'],
+            $this->withoutExamples($schemas['SessionDetail']['properties']['request']),
         );
         self::assertSame(
             ['$ref' => '#/components/schemas/SessionClientTelemetry'],
-            $schemas['SessionDetail']['properties']['client_telemetry'],
+            $this->withoutExamples($schemas['SessionDetail']['properties']['client_telemetry']),
         );
         self::assertSame(
             ['anyOf' => [['$ref' => '#/components/schemas/SessionAutomation'], ['type' => 'null']]],
-            $schemas['SessionDetail']['properties']['automation'],
+            $this->withoutExamples($schemas['SessionDetail']['properties']['automation']),
         );
         self::assertSame(
             ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/SessionSignalFired']],
-            $schemas['SessionDetail']['properties']['signals_fired'],
+            $this->withoutExamples($schemas['SessionDetail']['properties']['signals_fired']),
         );
         self::assertSame('string', $schemas['SessionSignalFired']['properties']['signal']['type']);
         self::assertContains('allowed_origins', $schemas['ApiKey']['required']);
