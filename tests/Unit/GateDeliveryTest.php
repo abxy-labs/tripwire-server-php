@@ -34,6 +34,19 @@ final class GateDeliveryTest extends TestCase
         self::assertSame($payloadFixture['service_id'], $validated['service_id']);
         self::assertSame($payloadFixture['gate_session_id'], $validated['gate_session_id']);
 
+        $event = GateDelivery::parseWebhookEvent($signatureFixture['raw_body']);
+        self::assertSame('webhook_event', $event['object']);
+        self::assertSame('gate.session.approved', $event['type']);
+        self::assertSame($payloadFixture['service_id'], $event['data']['service_id']);
+        $parsed = GateDelivery::verifyAndParseWebhookEvent(
+            $signatureFixture['secret'],
+            $signatureFixture['timestamp'],
+            $signatureFixture['raw_body'],
+            $signatureFixture['signature'],
+            nowSeconds: $signatureFixture['now_seconds'],
+        );
+        self::assertSame('gate.session.approved', $parsed['type']);
+
         self::assertTrue(GateDelivery::verifyGateWebhookSignature(
             $signatureFixture['secret'],
             $signatureFixture['timestamp'],

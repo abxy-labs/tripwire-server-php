@@ -60,13 +60,19 @@ final class ContractTest extends TestCase
                 '/v1/gate/sessions',
                 '/v1/gate/sessions/{gateSessionId}',
                 '/v1/gate/sessions/{gateSessionId}/ack',
+                '/v1/organizations',
+                '/v1/organizations/{organizationId}',
+                '/v1/organizations/{organizationId}/api-keys',
+                '/v1/organizations/{organizationId}/api-keys/{keyId}',
+                '/v1/organizations/{organizationId}/api-keys/{keyId}/rotations',
+                '/v1/organizations/{organizationId}/events',
+                '/v1/organizations/{organizationId}/events/{eventId}',
+                '/v1/organizations/{organizationId}/webhooks/endpoints',
+                '/v1/organizations/{organizationId}/webhooks/endpoints/{endpointId}',
+                '/v1/organizations/{organizationId}/webhooks/endpoints/{endpointId}/rotations',
+                '/v1/organizations/{organizationId}/webhooks/endpoints/{endpointId}/test',
                 '/v1/sessions',
                 '/v1/sessions/{sessionId}',
-                '/v1/teams',
-                '/v1/teams/{teamId}',
-                '/v1/teams/{teamId}/api-keys',
-                '/v1/teams/{teamId}/api-keys/{keyId}',
-                '/v1/teams/{teamId}/api-keys/{keyId}/rotations',
             ],
             $paths,
         );
@@ -102,13 +108,14 @@ final class ContractTest extends TestCase
             'api/gate/login-session-consume.json',
             'api/gate/agent-token-verify.json',
             'api/gate/agent-token-revoke.json',
-            'api/teams/team.json',
-            'api/teams/team-create.json',
-            'api/teams/team-update.json',
-            'api/teams/api-key-create.json',
-            'api/teams/api-key-list.json',
-            'api/teams/api-key-rotate.json',
-            'api/teams/api-key-revoke.json',
+            'api/organizations/organization.json',
+            'api/organizations/organization-create.json',
+            'api/organizations/organization-update.json',
+            'api/organizations/api-key-create.json',
+            'api/organizations/api-key-list.json',
+            'api/organizations/api-key-update.json',
+            'api/organizations/api-key-rotate.json',
+            'api/organizations/api-key-revoke.json',
         ];
 
         foreach ($fixtures as $relativePath) {
@@ -122,18 +129,18 @@ final class ContractTest extends TestCase
 
         self::assertSame('^sid_[0123456789abcdefghjkmnpqrstvwxyz]{26}$', $schemas['SessionId']['pattern']);
         self::assertSame('^vid_[0123456789abcdefghjkmnpqrstvwxyz]{26}$', $schemas['FingerprintId']['pattern']);
-        self::assertSame('^team_[0123456789abcdefghjkmnpqrstvwxyz]{26}$', $schemas['TeamId']['pattern']);
+        self::assertSame('^org_[0123456789abcdefghjkmnpqrstvwxyz]{26}$', $schemas['OrganizationId']['pattern']);
         self::assertSame('^key_[0123456789abcdefghjkmnpqrstvwxyz]{26}$', $schemas['ApiKeyId']['pattern']);
 
         self::assertSame(['$ref' => '#/components/schemas/SessionId'], $this->withoutExamples($schemas['SessionSummary']['properties']['id']));
-        self::assertSame(['$ref' => '#/components/schemas/TeamStatus'], $this->withoutExamples($schemas['Team']['properties']['status']));
+        self::assertSame(['$ref' => '#/components/schemas/OrganizationStatus'], $this->withoutExamples($schemas['Organization']['properties']['status']));
         self::assertSame(['$ref' => '#/components/schemas/ApiKeyStatus'], $this->withoutExamples($schemas['ApiKey']['properties']['status']));
         self::assertSame(
             '#/components/schemas/KnownPublicErrorCode',
             $schemas['PublicError']['properties']['code']['x-tripwire-known-values-ref'],
         );
-        self::assertSame(['active', 'suspended', 'deleted'], $schemas['TeamStatus']['enum']);
-        self::assertSame(['active', 'revoked', 'rotated'], $schemas['ApiKeyStatus']['enum']);
+        self::assertSame(['active', 'suspended', 'deleted'], $schemas['OrganizationStatus']['enum']);
+        self::assertSame(['active', 'rotating', 'revoked'], $schemas['ApiKeyStatus']['enum']);
         self::assertContains('decision', $schemas['SessionDetail']['required']);
         self::assertContains('highlights', $schemas['SessionDetail']['required']);
         self::assertContains('automation', $schemas['SessionDetail']['required']);
@@ -166,10 +173,16 @@ final class ContractTest extends TestCase
             $this->withoutExamples($schemas['SessionDetail']['properties']['signals_fired']),
         );
         self::assertSame('string', $schemas['SessionSignalFired']['properties']['signal']['type']);
+        self::assertContains('type', $schemas['ApiKey']['required']);
         self::assertContains('allowed_origins', $schemas['ApiKey']['required']);
+        self::assertContains('scopes', $schemas['ApiKey']['required']);
+        self::assertContains('key_preview', $schemas['ApiKey']['required']);
+        self::assertContains('last_used_at', $schemas['ApiKey']['required']);
         self::assertContains('rate_limit', $schemas['ApiKey']['required']);
         self::assertContains('rotated_at', $schemas['ApiKey']['required']);
         self::assertContains('revoked_at', $schemas['ApiKey']['required']);
+        self::assertContains('grace_expires_at', $schemas['ApiKey']['required']);
+        self::assertContains('revealed_key', $schemas['IssuedApiKey']['required']);
         self::assertArrayNotHasKey('team_id', $schemas['GateManagedService']['properties']);
         self::assertArrayNotHasKey('webhook_secret', $schemas['GateManagedService']['properties']);
         self::assertArrayNotHasKey('CollectBatchResponse', $schemas);
@@ -183,13 +196,18 @@ final class ContractTest extends TestCase
         self::assertSame(['Sessions'], $paths['/v1/sessions']['get']['tags']);
         self::assertSame('getVisitorFingerprint', $paths['/v1/fingerprints/{visitorId}']['get']['operationId']);
         self::assertSame(['Visitor fingerprints'], $paths['/v1/fingerprints/{visitorId}']['get']['tags']);
-        self::assertSame('updateTeam', $paths['/v1/teams/{teamId}']['patch']['operationId']);
-        self::assertSame(['Teams'], $paths['/v1/teams/{teamId}']['patch']['tags']);
+        self::assertSame('updateOrganization', $paths['/v1/organizations/{organizationId}']['patch']['operationId']);
+        self::assertSame(['Organizations'], $paths['/v1/organizations/{organizationId}']['patch']['tags']);
         self::assertSame(
-            'rotateTeamApiKey',
-            $paths['/v1/teams/{teamId}/api-keys/{keyId}/rotations']['post']['operationId'],
+            'updateOrganizationApiKey',
+            $paths['/v1/organizations/{organizationId}/api-keys/{keyId}']['patch']['operationId'],
         );
-        self::assertSame(['API Keys'], $paths['/v1/teams/{teamId}/api-keys/{keyId}/rotations']['post']['tags']);
+        self::assertSame(['API Keys'], $paths['/v1/organizations/{organizationId}/api-keys/{keyId}']['patch']['tags']);
+        self::assertSame(
+            'rotateOrganizationApiKey',
+            $paths['/v1/organizations/{organizationId}/api-keys/{keyId}/rotations']['post']['operationId'],
+        );
+        self::assertSame(['API Keys'], $paths['/v1/organizations/{organizationId}/api-keys/{keyId}/rotations']['post']['tags']);
         self::assertSame('createManagedGateService', $paths['/v1/gate/services']['post']['operationId']);
         self::assertSame(['Gate'], $paths['/v1/gate/services']['post']['tags']);
         self::assertSame('pollGateSession', $paths['/v1/gate/sessions/{gateSessionId}']['get']['operationId']);

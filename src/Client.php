@@ -15,7 +15,8 @@ use Psr\Http\Message\StreamFactoryInterface;
 use Tripwire\Server\Api\FingerprintsApi;
 use Tripwire\Server\Api\GateApi;
 use Tripwire\Server\Api\SessionsApi;
-use Tripwire\Server\Api\TeamsApi;
+use Tripwire\Server\Api\OrganizationsApi;
+use Tripwire\Server\Api\WebhooksApi;
 use Tripwire\Server\Exception\TripwireConfigurationError;
 use Tripwire\Server\Http\HttpClient;
 
@@ -25,8 +26,9 @@ final class Client
 
     private SessionsApi $sessions;
     private FingerprintsApi $fingerprints;
-    private TeamsApi $teams;
+    private OrganizationsApi $organizations;
     private GateApi $gate;
+    private WebhooksApi $webhooks;
 
     /**
      * @throws TripwireConfigurationError
@@ -61,8 +63,9 @@ final class Client
 
         $this->sessions = new SessionsApi($transport);
         $this->fingerprints = new FingerprintsApi($transport);
-        $this->teams = new TeamsApi($transport);
+        $this->organizations = new OrganizationsApi($transport);
         $this->gate = new GateApi($transport);
+        $this->webhooks = new WebhooksApi($transport);
     }
 
     public function sessions(): SessionsApi
@@ -75,14 +78,19 @@ final class Client
         return $this->fingerprints;
     }
 
-    public function teams(): TeamsApi
+    public function organizations(): OrganizationsApi
     {
-        return $this->teams;
+        return $this->organizations;
     }
 
     public function gate(): GateApi
     {
         return $this->gate;
+    }
+
+    public function webhooks(): WebhooksApi
+    {
+        return $this->webhooks;
     }
 
     private function resolveSecretKey(?string $secretKey): ?string

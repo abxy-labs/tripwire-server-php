@@ -325,8 +325,8 @@ final class GateDelivery
      */
     public static function validateGateApprovedWebhookPayload(array $value): array
     {
-        if (($value['event'] ?? null) !== 'gate.session.approved') {
-            throw new \InvalidArgumentException('event must be gate.session.approved');
+        if (array_key_exists('event', $value)) {
+            throw new \InvalidArgumentException('webhook payload must not include event; use the webhook event envelope type');
         }
         if (!is_string($value['service_id'] ?? null) || $value['service_id'] === '') {
             throw new \InvalidArgumentException('service_id is required');
@@ -354,7 +354,6 @@ final class GateDelivery
         }
 
         return [
-            'event' => 'gate.session.approved',
             'service_id' => $value['service_id'],
             'gate_session_id' => $value['gate_session_id'],
             'gate_account_id' => $value['gate_account_id'],
@@ -387,6 +386,51 @@ final class GateDelivery
         $expected = hash_hmac('sha256', sprintf('%s.%s', $timestamp, $rawBody), $secret);
 
         return hash_equals($expected, $signature);
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function parseWebhookEvent(string $rawBody): array
+    {
+        $value = json_decode($rawBody, true, 512, JSON_THROW_ON_ERROR);
+        if (!is_array($value)) {
+            throw new \InvalidArgumentException('webhook event envelope must be an object');
+        }
+        if (($value['object'] ?? null) !== 'webhook_event') {
+            throw new \InvalidArgumentException('webhook event object must be webhook_event');
+        }
+        foreach (['id', 'type', 'created'] as $field) {
+            if (!is_string($value[$field] ?? null) || $value[$field] === '') {
+                throw new \InvalidArgumentException(sprintf('webhook event %s is required', $field));
+            }
+        }
+        if (!is_array($value['data'] ?? null)) {
+            throw new \InvalidArgumentException('webhook event data must be an object');
+        }
+        if ($value['type'] === 'gate.session.approved') {
+            $value['data'] = self::validateGateApprovedWebhookPayload($value['data']);
+        }
+
+        return $value;
+    }
+
+    /**
+     * @return array<string, mixed>
+     */
+    public static function verifyAndParseWebhookEvent(
+        string $secret,
+        string $timestamp,
+        string $rawBody,
+        string $signature,
+        int $maxAgeSeconds = 300,
+        ?int $nowSeconds = null,
+    ): array {
+        if (!self::verifyGateWebhookSignature($secret, $timestamp, $rawBody, $signature, $maxAgeSeconds, $nowSeconds)) {
+            throw new \InvalidArgumentException('Invalid Tripwire webhook signature');
+        }
+
+        return self::parseWebhookEvent($rawBody);
     }
 
     public static function keyIdForRawX25519PublicKey(string $rawPublicKey): string

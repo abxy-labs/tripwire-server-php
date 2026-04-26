@@ -26,52 +26,52 @@ final class LiveSmokeTest extends TestCase
             secretKey: $this->requireEnv('TRIPWIRE_SMOKE_SECRET_KEY'),
             baseUrl: getenv('TRIPWIRE_SMOKE_BASE_URL') ?: 'https://api.tripwirejs.com',
         );
-        $teamId = $this->requireEnv('TRIPWIRE_SMOKE_TEAM_ID');
+        $organizationId = $this->requireEnv('TRIPWIRE_SMOKE_ORGANIZATION_ID');
 
         $createdKeyId = null;
         $rotatedKeyId = null;
 
         try {
             $sessions = $client->sessions()->list(limit: 1);
-            self::assertGreaterThan(0, count($sessions->items), 'Smoke team must have at least one session for the live smoke suite.');
+            self::assertGreaterThan(0, count($sessions->items), 'Smoke organization must have at least one session for the live smoke suite.');
             $session = $client->sessions()->get($sessions->items[0]->id);
             self::assertSame($sessions->items[0]->id, $session->id);
 
             $fingerprints = $client->fingerprints()->list(limit: 1);
-            self::assertGreaterThan(0, count($fingerprints->items), 'Smoke team must have at least one fingerprint for the live smoke suite.');
+            self::assertGreaterThan(0, count($fingerprints->items), 'Smoke organization must have at least one fingerprint for the live smoke suite.');
             $fingerprint = $client->fingerprints()->get($fingerprints->items[0]->id);
             self::assertSame($fingerprints->items[0]->id, $fingerprint->id);
 
-            $team = $client->teams()->get($teamId);
-            self::assertSame($teamId, $team->id);
-            $updatedTeam = $client->teams()->update($teamId, name: $team->name, status: $team->status);
-            self::assertSame($team->name, $updatedTeam->name);
-            self::assertSame($team->status, $updatedTeam->status);
+            $organization = $client->organizations()->get($organizationId);
+            self::assertSame($organizationId, $organization->id);
+            $updatedOrganization = $client->organizations()->update($organizationId, name: $organization->name, status: $organization->status);
+            self::assertSame($organization->name, $updatedOrganization->name);
+            self::assertSame($organization->status, $updatedOrganization->status);
 
-            $created = $client->teams()->apiKeys()->create(
-                $teamId,
+            $created = $client->organizations()->apiKeys()->create(
+                $organizationId,
                 name: 'sdk-smoke-' . base_convert((string) (int) floor(microtime(true) * 1000), 10, 36),
                 environment: 'test',
             );
             $createdKeyId = $created->id;
-            self::assertStringStartsWith('sk_', $created->secret_key);
+            self::assertStringStartsWith('sk_', $created->revealed_key);
 
-            $listedKey = $this->findApiKey($client, $teamId, $created->id);
+            $listedKey = $this->findApiKey($client, $organizationId, $created->id);
             self::assertNotNull($listedKey);
             self::assertSame($created->id, $listedKey?->id);
 
-            $rotated = $client->teams()->apiKeys()->rotate($teamId, $created->id);
+            $rotated = $client->organizations()->apiKeys()->rotate($organizationId, $created->id);
             $rotatedKeyId = $rotated->id;
-            self::assertStringStartsWith('sk_', $rotated->secret_key);
+            self::assertStringStartsWith('sk_', $rotated->revealed_key);
 
             $fixture = FixtureLoader::load('sealed-token/vector.v1.json');
             $verified = SealedToken::safeVerify($fixture['token'], $fixture['secretKey']);
             self::assertTrue($verified->ok);
             self::assertSame($fixture['payload']['session_id'], $verified->data?->session_id);
         } finally {
-            $this->bestEffortRevoke($client, $teamId, $rotatedKeyId);
+            $this->bestEffortRevoke($client, $organizationId, $rotatedKeyId);
             if ($createdKeyId !== $rotatedKeyId) {
-                $this->bestEffortRevoke($client, $teamId, $createdKeyId);
+                $this->bestEffortRevoke($client, $organizationId, $createdKeyId);
             }
         }
     }
@@ -86,14 +86,14 @@ final class LiveSmokeTest extends TestCase
         return $value;
     }
 
-    private function bestEffortRevoke(Client $client, string $teamId, ?string $keyId): void
+    private function bestEffortRevoke(Client $client, string $organizationId, ?string $keyId): void
     {
         if ($keyId === null || $keyId === '') {
             return;
         }
 
         try {
-            $client->teams()->apiKeys()->revoke($teamId, $keyId);
+            $client->organizations()->apiKeys()->revoke($organizationId, $keyId);
         } catch (TripwireApiError $error) {
             if ($error->status === 404 || $error->code === 'request.not_found') {
                 return;
@@ -103,12 +103,12 @@ final class LiveSmokeTest extends TestCase
         }
     }
 
-    private function findApiKey(Client $client, string $teamId, string $keyId): ?ApiKey
+    private function findApiKey(Client $client, string $organizationId, string $keyId): ?ApiKey
     {
         $cursor = null;
 
         do {
-            $page = $client->teams()->apiKeys()->list($teamId, limit: 100, cursor: $cursor);
+            $page = $client->organizations()->apiKeys()->list($organizationId, limit: 100, cursor: $cursor);
             foreach ($page->items as $item) {
                 if ($item->id === $keyId) {
                     return $item;

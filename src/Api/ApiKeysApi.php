@@ -15,34 +15,37 @@ final class ApiKeysApi
 
     /**
      * @param array<int, string>|null $allowed_origins
+     * @param array<int, string>|null $scopes
      */
     public function create(
-        string $teamId,
-        ?string $name = null,
+        string $organizationId,
+        string $name,
+        ?string $type = null,
         ?string $environment = null,
         ?array $allowed_origins = null,
-        ?int $rate_limit = null,
+        ?array $scopes = null,
     ): IssuedApiKey {
         $response = $this->http->requestJson(
             'POST',
-            '/v1/teams/' . rawurlencode($teamId) . '/api-keys',
+            '/v1/organizations/' . rawurlencode($organizationId) . '/api-keys',
             [],
             $this->compact([
                 'name' => $name,
+                'type' => $type,
                 'environment' => $environment,
                 'allowed_origins' => $allowed_origins,
-                'rate_limit' => $rate_limit,
+                'scopes' => $scopes,
             ]),
         );
 
         return IssuedApiKey::fromArray((array) $response['data']);
     }
 
-    public function list(string $teamId, ?int $limit = null, ?string $cursor = null): ListResult
+    public function list(string $organizationId, ?int $limit = null, ?string $cursor = null): ListResult
     {
         $response = $this->http->requestJson(
             'GET',
-            '/v1/teams/' . rawurlencode($teamId) . '/api-keys',
+            '/v1/organizations/' . rawurlencode($organizationId) . '/api-keys',
             [
                 'limit' => $limit,
                 'cursor' => $cursor,
@@ -64,20 +67,44 @@ final class ApiKeysApi
         );
     }
 
-    public function revoke(string $teamId, string $keyId): ApiKey
-    {
+    /**
+     * @param array<int, string>|null $allowed_origins
+     * @param array<int, string>|null $scopes
+     */
+    public function update(
+        string $organizationId,
+        string $keyId,
+        ?string $name = null,
+        ?array $allowed_origins = null,
+        ?array $scopes = null,
+    ): ApiKey {
         $response = $this->http->requestJson(
-            'DELETE',
-            '/v1/teams/' . rawurlencode($teamId) . '/api-keys/' . rawurlencode($keyId),
+            'PATCH',
+            '/v1/organizations/' . rawurlencode($organizationId) . '/api-keys/' . rawurlencode($keyId),
+            [],
+            $this->compact([
+                'name' => $name,
+                'allowed_origins' => $allowed_origins,
+                'scopes' => $scopes,
+            ]),
         );
         return ApiKey::fromArray((array) $response['data']);
     }
 
-    public function rotate(string $teamId, string $keyId): IssuedApiKey
+    public function revoke(string $organizationId, string $keyId): ApiKey
+    {
+        $response = $this->http->requestJson(
+            'DELETE',
+            '/v1/organizations/' . rawurlencode($organizationId) . '/api-keys/' . rawurlencode($keyId),
+        );
+        return ApiKey::fromArray((array) $response['data']);
+    }
+
+    public function rotate(string $organizationId, string $keyId): IssuedApiKey
     {
         $response = $this->http->requestJson(
             'POST',
-            '/v1/teams/' . rawurlencode($teamId) . '/api-keys/' . rawurlencode($keyId) . '/rotations',
+            '/v1/organizations/' . rawurlencode($organizationId) . '/api-keys/' . rawurlencode($keyId) . '/rotations',
         );
 
         return IssuedApiKey::fromArray((array) $response['data']);
