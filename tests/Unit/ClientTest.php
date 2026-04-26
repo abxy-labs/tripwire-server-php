@@ -209,20 +209,26 @@ final class ClientTest extends TestCase
         self::assertSame($detailFixture['data']['id'], $client->fingerprints()->get('vid_456789abcdefghjkmnpqrstvwx')->id);
     }
 
-    public function testSupportsTeamsAndApiKeyManagementEndpoints(): void
+    public function testSupportsOrganizationsAndApiKeyManagementEndpoints(): void
     {
-        $teamFixture = FixtureLoader::load('api/teams/team.json');
-        $createKeyFixture = FixtureLoader::load('api/teams/api-key-create.json');
-        $listKeyFixture = FixtureLoader::load('api/teams/api-key-list.json');
-        $revokeKeyFixture = FixtureLoader::load('api/teams/api-key-revoke.json');
-        $rotateKeyFixture = FixtureLoader::load('api/teams/api-key-rotate.json');
+        $organizationFixture = FixtureLoader::load('api/organizations/organization.json');
+        $organizationCreateFixture = FixtureLoader::load('api/organizations/organization-create.json');
+        $organizationUpdateFixture = FixtureLoader::load('api/organizations/organization-update.json');
+        $createKeyFixture = FixtureLoader::load('api/organizations/api-key-create.json');
+        $listKeyFixture = FixtureLoader::load('api/organizations/api-key-list.json');
+        $updateKeyFixture = FixtureLoader::load('api/organizations/api-key-update.json');
+        $revokeKeyFixture = FixtureLoader::load('api/organizations/api-key-revoke.json');
+        $rotateKeyFixture = FixtureLoader::load('api/organizations/api-key-rotate.json');
 
         $factory = new Psr17Factory();
-        $httpClient = new TestHttpClient(static function (RequestInterface $request) use ($teamFixture, $createKeyFixture, $listKeyFixture, $revokeKeyFixture, $rotateKeyFixture) {
+        $httpClient = new TestHttpClient(static function (RequestInterface $request) use ($organizationFixture, $organizationCreateFixture, $organizationUpdateFixture, $createKeyFixture, $listKeyFixture, $updateKeyFixture, $revokeKeyFixture, $rotateKeyFixture) {
             $url = (string) $request->getUri();
 
             if (str_ends_with($url, '/api-keys/key_6789abcdefghjkmnpqrstvwxyz/rotations')) {
                 return JsonResponse::create($rotateKeyFixture, 201);
+            }
+            if (str_ends_with($url, '/api-keys/key_6789abcdefghjkmnpqrstvwxyz') && $request->getMethod() === 'PATCH') {
+                return JsonResponse::create($updateKeyFixture);
             }
             if (str_ends_with($url, '/api-keys/key_6789abcdefghjkmnpqrstvwxyz')) {
                 return JsonResponse::create($revokeKeyFixture);
@@ -233,8 +239,14 @@ final class ClientTest extends TestCase
             if (str_ends_with($url, '/api-keys')) {
                 return JsonResponse::create($listKeyFixture);
             }
+            if (str_ends_with($url, '/v1/organizations') && $request->getMethod() === 'POST') {
+                return JsonResponse::create($organizationCreateFixture, 201);
+            }
+            if (str_ends_with($url, '/v1/organizations/org_56789abcdefghjkmnpqrstvwxy') && $request->getMethod() === 'PATCH') {
+                return JsonResponse::create($organizationUpdateFixture);
+            }
 
-            return JsonResponse::create($teamFixture);
+            return JsonResponse::create($organizationFixture);
         });
 
         $client = new Client(
@@ -244,16 +256,92 @@ final class ClientTest extends TestCase
             streamFactory: $factory,
         );
 
-        self::assertSame($teamFixture['data']['id'], $client->teams()->get('team_56789abcdefghjkmnpqrstvwxy')->id);
-        self::assertSame($teamFixture['data']['id'], $client->teams()->create('Example Team', 'example-team')->id);
-        self::assertSame($teamFixture['data']['id'], $client->teams()->update('team_56789abcdefghjkmnpqrstvwxy', name: 'Example Team')->id);
-        self::assertSame($createKeyFixture['data']['id'], $client->teams()->apiKeys()->create('team_56789abcdefghjkmnpqrstvwxy', name: 'Production')->id);
-        self::assertSame($listKeyFixture['data'][0]['id'], $client->teams()->apiKeys()->list('team_56789abcdefghjkmnpqrstvwxy')->items[0]->id);
+        self::assertSame($organizationFixture['data']['id'], $client->organizations()->get('org_56789abcdefghjkmnpqrstvwxy')->id);
+        self::assertSame($organizationCreateFixture['data']['id'], $client->organizations()->create('Example Organization', 'example-organization')->id);
+        self::assertSame($organizationUpdateFixture['data']['id'], $client->organizations()->update('org_56789abcdefghjkmnpqrstvwxy', name: 'Example Organization')->id);
+        self::assertSame($createKeyFixture['data']['id'], $client->organizations()->apiKeys()->create('org_56789abcdefghjkmnpqrstvwxy', name: 'Production Backend')->id);
+        self::assertSame($listKeyFixture['data'][0]['id'], $client->organizations()->apiKeys()->list('org_56789abcdefghjkmnpqrstvwxy')->items[0]->id);
+        self::assertSame(
+            $updateKeyFixture['data']['name'],
+            $client->organizations()->apiKeys()->update('org_56789abcdefghjkmnpqrstvwxy', 'key_6789abcdefghjkmnpqrstvwxyz', name: 'Updated Web App')->name,
+        );
         self::assertSame(
             $revokeKeyFixture['data']['id'],
-            $client->teams()->apiKeys()->revoke('team_56789abcdefghjkmnpqrstvwxy', 'key_6789abcdefghjkmnpqrstvwxyz')->id,
+            $client->organizations()->apiKeys()->revoke('org_56789abcdefghjkmnpqrstvwxy', 'key_6789abcdefghjkmnpqrstvwxyz')->id,
         );
-        self::assertSame($rotateKeyFixture['data']['id'], $client->teams()->apiKeys()->rotate('team_56789abcdefghjkmnpqrstvwxy', 'key_6789abcdefghjkmnpqrstvwxyz')->id);
+        self::assertSame($rotateKeyFixture['data']['id'], $client->organizations()->apiKeys()->rotate('org_56789abcdefghjkmnpqrstvwxy', 'key_6789abcdefghjkmnpqrstvwxyz')->id);
+    }
+
+    public function testWebhooksUseEventHistoryEndpoints(): void
+    {
+        $delivery = [
+            'object' => 'webhook_delivery',
+            'id' => 'wdlv_0123456789abcdef0123456789abcdef',
+            'event_id' => 'wevt_0123456789abcdef0123456789abcdef',
+            'endpoint_id' => 'we_0123456789abcdef0123456789abcdef',
+            'event_type' => 'session.fingerprint.calculated',
+            'status' => 'succeeded',
+            'attempts' => 1,
+            'response_status' => 200,
+            'response_body' => '{}',
+            'error' => null,
+            'created_at' => '2026-03-24T20:00:00.000Z',
+            'updated_at' => '2026-03-24T20:00:05.000Z',
+        ];
+        $event = [
+            'object' => 'event',
+            'id' => 'wevt_0123456789abcdef0123456789abcdef',
+            'type' => 'session.fingerprint.calculated',
+            'subject' => ['type' => 'session', 'id' => 'sid_0123456789abcdefghjkmnpqrs'],
+            'data' => ['source' => 'waitForFingerprint'],
+            'webhook_deliveries' => [$delivery],
+            'created_at' => '2026-03-24T20:00:00.000Z',
+        ];
+
+        $factory = new Psr17Factory();
+        $httpClient = new TestHttpClient(static function (RequestInterface $request) use ($event) {
+            self::assertSame('Bearer sk_live_test', $request->getHeaderLine('Authorization'));
+            $path = $request->getUri()->getPath();
+            if ($path === '/v1/organizations/org_56789abcdefghjkmnpqrstvwxy/events') {
+                parse_str($request->getUri()->getQuery(), $query);
+                self::assertSame('we_0123456789abcdef0123456789abcdef', $query['endpoint_id']);
+                self::assertSame('session.fingerprint.calculated', $query['type']);
+                return JsonResponse::create([
+                    'data' => [$event],
+                    'pagination' => ['limit' => 25, 'has_more' => false],
+                    'meta' => ['request_id' => 'req_0123456789abcdef0123456789abcdef'],
+                ]);
+            }
+            if ($path === '/v1/organizations/org_56789abcdefghjkmnpqrstvwxy/events/wevt_0123456789abcdef0123456789abcdef') {
+                return JsonResponse::create([
+                    'data' => $event,
+                    'meta' => ['request_id' => 'req_0123456789abcdef0123456789abcdef'],
+                ]);
+            }
+
+            self::fail('Unexpected request ' . $request->getMethod() . ' ' . $path);
+        });
+
+        $client = new Client(
+            secretKey: 'sk_live_test',
+            httpClient: $httpClient,
+            requestFactory: $factory,
+            streamFactory: $factory,
+        );
+
+        $events = $client->webhooks()->listEvents(
+            'org_56789abcdefghjkmnpqrstvwxy',
+            'we_0123456789abcdef0123456789abcdef',
+            'session.fingerprint.calculated',
+            25,
+        );
+
+        self::assertSame('sid_0123456789abcdefghjkmnpqrs', $events->items[0]->subject->id);
+        self::assertSame('succeeded', $events->items[0]->webhook_deliveries[0]->status);
+        self::assertSame(
+            'session.fingerprint.calculated',
+            $client->webhooks()->retrieveEvent('org_56789abcdefghjkmnpqrstvwxy', 'wevt_0123456789abcdef0123456789abcdef')->type,
+        );
     }
 
     public function testSupportsGateEndpointsAcrossPublicBearerAndSecretFlows(): void
@@ -369,7 +457,7 @@ final class ClientTest extends TestCase
                 'Acme Production',
                 'Acme production signup flow',
                 'https://acme.example.com',
-                'https://api.acme.example.com/v1/gate/webhook',
+                'we_0123456789abcdef0123456789abcdef',
             )->id,
         );
         self::assertTrue($client->gate()->services()->update('acme_prod', discoverable: true)->discoverable);

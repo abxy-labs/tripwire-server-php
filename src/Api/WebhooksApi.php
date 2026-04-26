@@ -5,6 +5,9 @@ declare(strict_types=1);
 namespace Tripwire\Server\Api;
 
 use Tripwire\Server\Http\HttpClient;
+use Tripwire\Server\Resource\Event;
+use Tripwire\Server\Resource\WebhookEndpoint;
+use Tripwire\Server\Resource\WebhookTest;
 use Tripwire\Server\Result\ListResult;
 
 final class WebhooksApi
@@ -14,14 +17,13 @@ final class WebhooksApi
     public function listEndpoints(string $organizationId): ListResult
     {
         $response = $this->http->requestJson('GET', '/v1/organizations/' . rawurlencode($organizationId) . '/webhooks/endpoints');
-        return $this->listResult($response);
+        return $this->listResult($response, static fn (array $item): WebhookEndpoint => WebhookEndpoint::fromArray($item));
     }
 
     /**
      * @param array<int, string> $eventTypes
-     * @return array<string, mixed>
      */
-    public function createEndpoint(string $organizationId, string $name, string $url, array $eventTypes): array
+    public function createEndpoint(string $organizationId, string $name, string $url, array $eventTypes): WebhookEndpoint
     {
         $response = $this->http->requestJson(
             'POST',
@@ -33,14 +35,13 @@ final class WebhooksApi
             ],
         );
 
-        return (array) $response['data'];
+        return WebhookEndpoint::fromArray((array) $response['data']);
     }
 
     /**
      * @param array<string, mixed> $updates
-     * @return array<string, mixed>
      */
-    public function updateEndpoint(string $organizationId, string $endpointId, array $updates): array
+    public function updateEndpoint(string $organizationId, string $endpointId, array $updates): WebhookEndpoint
     {
         $response = $this->http->requestJson(
             'PATCH',
@@ -48,58 +49,62 @@ final class WebhooksApi
             body: $updates,
         );
 
-        return (array) $response['data'];
+        return WebhookEndpoint::fromArray((array) $response['data']);
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function disableEndpoint(string $organizationId, string $endpointId): array
+    public function disableEndpoint(string $organizationId, string $endpointId): WebhookEndpoint
     {
         $response = $this->http->requestJson('DELETE', '/v1/organizations/' . rawurlencode($organizationId) . '/webhooks/endpoints/' . rawurlencode($endpointId));
-        return (array) $response['data'];
+        return WebhookEndpoint::fromArray((array) $response['data']);
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function rotateSecret(string $organizationId, string $endpointId): array
+    public function rotateSecret(string $organizationId, string $endpointId): WebhookEndpoint
     {
         $response = $this->http->requestJson('POST', '/v1/organizations/' . rawurlencode($organizationId) . '/webhooks/endpoints/' . rawurlencode($endpointId) . '/rotations');
-        return (array) $response['data'];
+        return WebhookEndpoint::fromArray((array) $response['data']);
     }
 
-    /**
-     * @return array<string, mixed>
-     */
-    public function sendTest(string $organizationId, string $endpointId): array
+    public function sendTest(string $organizationId, string $endpointId): WebhookTest
     {
         $response = $this->http->requestJson('POST', '/v1/organizations/' . rawurlencode($organizationId) . '/webhooks/endpoints/' . rawurlencode($endpointId) . '/test');
-        return (array) $response['data'];
+        return WebhookTest::fromArray((array) $response['data']);
     }
 
-    public function listDeliveries(string $organizationId, ?string $endpointId = null, ?int $limit = null): ListResult
+    public function listEvents(string $organizationId, ?string $endpointId = null, ?string $type = null, ?int $limit = null): ListResult
     {
         $response = $this->http->requestJson(
             'GET',
-            '/v1/organizations/' . rawurlencode($organizationId) . '/webhooks/deliveries',
+            '/v1/organizations/' . rawurlencode($organizationId) . '/events',
             query: array_filter([
                 'endpoint_id' => $endpointId,
+                'type' => $type,
                 'limit' => $limit,
             ], static fn (mixed $value): bool => $value !== null),
         );
 
-        return $this->listResult($response);
+        return $this->listResult($response, static fn (array $item): Event => Event::fromArray($item));
+    }
+
+    public function retrieveEvent(string $organizationId, string $eventId): Event
+    {
+        $response = $this->http->requestJson('GET', '/v1/organizations/' . rawurlencode($organizationId) . '/events/' . rawurlencode($eventId));
+        return Event::fromArray((array) $response['data']);
     }
 
     /**
      * @param array<string, mixed> $response
+     * @param callable(array<string, mixed>): mixed $mapItem
      */
-    private function listResult(array $response): ListResult
+    private function listResult(array $response, callable $mapItem): ListResult
     {
+        $items = [];
+        foreach ((array) $response['data'] as $item) {
+            $items[] = $mapItem((array) $item);
+        }
+
         $pagination = (array) ($response['pagination'] ?? []);
         return new ListResult(
-            (array) $response['data'],
+            $items,
             (int) $pagination['limit'],
             (bool) $pagination['has_more'],
             isset($pagination['next_cursor']) ? (string) $pagination['next_cursor'] : null,
