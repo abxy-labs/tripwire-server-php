@@ -80,6 +80,20 @@ final class GateDeliveryTest extends TestCase
         }
     }
 
+    public function testWebhookParserRejectsUnknownEventTypes(): void
+    {
+        self::expectException(\InvalidArgumentException::class);
+        self::expectExceptionMessage('unsupported webhook event type');
+
+        GateDelivery::parseWebhookEvent((string) json_encode([
+            'id' => 'wevt_0123456789abcdefghjkmnpqrs',
+            'object' => 'webhook_event',
+            'type' => 'unknown.event',
+            'created' => '2026-04-27T00:00:00.000Z',
+            'data' => [],
+        ], JSON_THROW_ON_ERROR));
+    }
+
     public function testCreatedResponseRoundtrips(): void
     {
         $keyPair = GateDelivery::createDeliveryKeyPair();

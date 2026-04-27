@@ -180,7 +180,14 @@ final class ClientTest extends TestCase
             streamFactory: $factory,
         );
 
-        self::assertSame($fixture['data']['id'], $client->sessions()->get('sid_0123456789abcdefghjkmnpqrs')->id);
+        $session = $client->sessions()->get('sid_0123456789abcdefghjkmnpqrs');
+        self::assertSame($fixture['data']['id'], $session->id);
+        self::assertNull($session->native_runtime_integrity);
+        self::assertNull($session->native_app);
+        self::assertNull($session->native_carrier);
+        self::assertNull($session->native_motion_print);
+        self::assertNull($session->device_identity);
+        self::assertNull($session->install_id);
     }
 
     public function testListsAndFetchesFingerprints(): void
