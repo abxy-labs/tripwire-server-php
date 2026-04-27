@@ -49,6 +49,12 @@ final class GateDelivery
         'BUN_CONFIG_',
         'GIT_CONFIG_',
     ];
+    private const WEBHOOK_EVENT_TYPES = [
+        'session.fingerprint.calculated' => true,
+        'session.result.persisted' => true,
+        'gate.session.approved' => true,
+        'webhook.test' => true,
+    ];
 
     public static function deriveGateAgentTokenEnvKey(string $serviceId): string
     {
@@ -404,6 +410,9 @@ final class GateDelivery
             if (!is_string($value[$field] ?? null) || $value[$field] === '') {
                 throw new \InvalidArgumentException(sprintf('webhook event %s is required', $field));
             }
+        }
+        if (!isset(self::WEBHOOK_EVENT_TYPES[$value['type']])) {
+            throw new \InvalidArgumentException(sprintf('unsupported webhook event type: %s', $value['type']));
         }
         if (!is_array($value['data'] ?? null)) {
             throw new \InvalidArgumentException('webhook event data must be an object');
