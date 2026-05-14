@@ -9,7 +9,7 @@ final class SessionDetail
     /**
      * @param array<string, mixed> $decision
      * @param array<int, array<string, mixed>> $highlights
-     * @param array<string, mixed>|null $automation
+     * @param array<string, mixed>|null $attribution
      * @param array<string, mixed>|null $web_bot_auth
      * @param array<string, mixed> $network
      * @param array<string, mixed> $runtime_integrity
@@ -35,7 +35,7 @@ final class SessionDetail
         public readonly ?string $created_at,
         public readonly array $decision,
         public readonly array $highlights,
-        public readonly ?array $automation,
+        public readonly ?array $attribution,
         public readonly ?array $web_bot_auth,
         public readonly array $network,
         public readonly array $runtime_integrity,
@@ -68,7 +68,7 @@ final class SessionDetail
             isset($data['created_at']) ? (string) $data['created_at'] : null,
             (array) $data['decision'],
             array_map(static fn (mixed $item): array => (array) $item, (array) ($data['highlights'] ?? [])),
-            isset($data['automation']) && is_array($data['automation']) ? $data['automation'] : null,
+            isset($data['attribution']) && is_array($data['attribution']) ? $data['attribution'] : null,
             isset($data['web_bot_auth']) && is_array($data['web_bot_auth']) ? $data['web_bot_auth'] : null,
             isset($data['network']) && is_array($data['network']) ? $data['network'] : [],
             isset($data['runtime_integrity']) && is_array($data['runtime_integrity']) ? $data['runtime_integrity'] : [],
@@ -101,7 +101,7 @@ final class SessionDetail
             'created_at' => $this->created_at,
             'decision' => $this->decision,
             'highlights' => $this->highlights,
-            'automation' => $this->automation,
+            'attribution' => $this->attribution,
             'web_bot_auth' => $this->web_bot_auth,
             'network' => $this->network,
             'runtime_integrity' => $this->runtime_integrity,
