@@ -143,7 +143,7 @@ final class ContractTest extends TestCase
         self::assertSame(['active', 'rotating', 'revoked'], $schemas['ApiKeyStatus']['enum']);
         self::assertContains('decision', $schemas['SessionDetail']['required']);
         self::assertContains('highlights', $schemas['SessionDetail']['required']);
-        self::assertContains('automation', $schemas['SessionDetail']['required']);
+        self::assertContains('attribution', $schemas['SessionDetail']['required']);
         self::assertContains('web_bot_auth', $schemas['SessionDetail']['required']);
         self::assertContains('runtime_integrity', $schemas['SessionDetail']['required']);
         self::assertContains('visitor_fingerprint', $schemas['SessionDetail']['required']);
@@ -165,8 +165,8 @@ final class ContractTest extends TestCase
             $this->withoutExamples($schemas['SessionDetail']['properties']['client_telemetry']),
         );
         self::assertSame(
-            ['anyOf' => [['$ref' => '#/components/schemas/SessionAutomation'], ['type' => 'null']]],
-            $this->withoutExamples($schemas['SessionDetail']['properties']['automation']),
+            ['anyOf' => [['$ref' => '#/components/schemas/SessionAttribution'], ['type' => 'null']]],
+            $this->withoutExamples($schemas['SessionDetail']['properties']['attribution']),
         );
         self::assertSame(
             ['type' => 'array', 'items' => ['$ref' => '#/components/schemas/SessionSignalFired']],
