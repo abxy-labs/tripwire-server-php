@@ -8,7 +8,7 @@ The Tripwire PHP library provides convenient access to the Tripwire API from app
 
 The library also provides:
 
-- a fast configuration path using `TRIPWIRE_SECRET_KEY`
+- a fast configuration path using `FOIL_SECRET_KEY`
 - a bundled PSR-18 transport stack with support for custom PSR clients and factories
 - structured API errors and built-in sealed token verification
 - webhook endpoint management, test sends, and event delivery history
@@ -33,14 +33,14 @@ composer require abxy/tripwire-server
 
 ## Usage
 
-Use `TRIPWIRE_SECRET_KEY` or `secretKey` for core detect APIs. For public or bearer-auth Gate flows, the client can also be created without a secret key:
+Use `FOIL_SECRET_KEY` or `secretKey` for core detect APIs. For public or bearer-auth Gate flows, the client can also be created without a secret key:
 
 ```php
 <?php
 
 use Tripwire\Server\Client;
 
-$client = new Client(secretKey: getenv('TRIPWIRE_SECRET_KEY') ?: null);
+$client = new Client(secretKey: getenv('FOIL_SECRET_KEY') ?: null);
 
 $page = $client->sessions()->list(verdict: 'bot', limit: 25);
 $session = $client->sessions()->get('sid_0123456789abcdefghjkmnpqrs');
@@ -55,7 +55,7 @@ echo $session->decision['automation_status'] . ' ' . ($session->highlights[0]['s
 
 use Tripwire\Server\SealedToken;
 
-$result = SealedToken::safeVerify($sealedToken, getenv('TRIPWIRE_SECRET_KEY') ?: null);
+$result = SealedToken::safeVerify($sealedToken, getenv('FOIL_SECRET_KEY') ?: null);
 
 if (!$result->ok) {
     error_log($result->error?->getMessage() ?? 'Tripwire verification failed.');
@@ -155,13 +155,13 @@ $keyPair = GateDelivery::createDeliveryKeyPair();
 $response = GateDelivery::createGateApprovedWebhookResponse([
     'delivery' => $keyPair['delivery'],
     'outputs' => [
-        'TRIPWIRE_PUBLISHABLE_KEY' => 'pk_live_...',
-        'TRIPWIRE_SECRET_KEY' => 'sk_live_...',
+        'FOIL_PUBLISHABLE_KEY' => 'pk_live_...',
+        'FOIL_SECRET_KEY' => 'sk_live_...',
     ],
 ]);
 $payload = GateDelivery::decryptGateDeliveryEnvelope($keyPair['private_key'], $response['encrypted_delivery']);
 
-echo $payload['outputs']['TRIPWIRE_SECRET_KEY'] . PHP_EOL;
+echo $payload['outputs']['FOIL_SECRET_KEY'] . PHP_EOL;
 ```
 
 ### Error handling

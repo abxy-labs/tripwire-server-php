@@ -64,12 +64,16 @@ final class GateDelivery
             throw new \InvalidArgumentException('service_id is required to derive a Gate agent token env key');
         }
 
+        if ($normalized === 'TRIPWIRE' || $normalized === 'FOIL') {
+            return 'FOIL' . self::GATE_AGENT_TOKEN_ENV_SUFFIX;
+        }
+
         return $normalized . self::GATE_AGENT_TOKEN_ENV_SUFFIX;
     }
 
     public static function isGateManagedEnvVarKey(string $key): bool
     {
-        return $key === 'TRIPWIRE_AGENT_TOKEN' || str_ends_with($key, self::GATE_AGENT_TOKEN_ENV_SUFFIX);
+        return $key === 'FOIL_AGENT_TOKEN' || str_ends_with($key, self::GATE_AGENT_TOKEN_ENV_SUFFIX);
     }
 
     public static function isBlockedGateEnvVarKey(string $key): bool

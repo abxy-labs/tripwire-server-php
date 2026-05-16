@@ -84,12 +84,12 @@ final class SealedToken
     {
         $resolved = $secretKey;
         if ($resolved === null || $resolved === '') {
-            $resolved = getenv('TRIPWIRE_SECRET_KEY') ?: null;
+            $resolved = getenv('FOIL_SECRET_KEY') ?: null;
         }
 
         if ($resolved === null || $resolved === '') {
             throw new TripwireConfigurationError(
-                'Missing Tripwire secret key. Pass secretKey explicitly or set TRIPWIRE_SECRET_KEY.',
+                'Missing Tripwire secret key. Pass secretKey explicitly or set FOIL_SECRET_KEY.',
             );
         }
 

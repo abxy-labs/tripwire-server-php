@@ -97,7 +97,7 @@ final class Client
     {
         $resolved = $secretKey;
         if ($resolved === null || $resolved === '') {
-            $resolved = getenv('TRIPWIRE_SECRET_KEY') ?: null;
+            $resolved = getenv('FOIL_SECRET_KEY') ?: null;
         }
 
         return ($resolved === null || $resolved === '') ? null : $resolved;

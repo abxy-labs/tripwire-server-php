@@ -100,15 +100,15 @@ final class GateDeliveryTest extends TestCase
         $response = GateDelivery::createGateApprovedWebhookResponse([
             'delivery' => $keyPair['delivery'],
             'outputs' => [
-                'TRIPWIRE_PUBLISHABLE_KEY' => 'pk_live_bundle',
-                'TRIPWIRE_SECRET_KEY' => 'sk_live_bundle',
+                'FOIL_PUBLISHABLE_KEY' => 'pk_live_bundle',
+                'FOIL_SECRET_KEY' => 'sk_live_bundle',
             ],
         ]);
         $decrypted = GateDelivery::decryptGateDeliveryEnvelope($keyPair['private_key'], $response['encrypted_delivery']);
         self::assertSame(
             [
-                'TRIPWIRE_PUBLISHABLE_KEY' => 'pk_live_bundle',
-                'TRIPWIRE_SECRET_KEY' => 'sk_live_bundle',
+                'FOIL_PUBLISHABLE_KEY' => 'pk_live_bundle',
+                'FOIL_SECRET_KEY' => 'sk_live_bundle',
             ],
             $decrypted['outputs'],
         );

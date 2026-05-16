@@ -18,8 +18,8 @@ final class ClientTest extends TestCase
 {
     public function testUsesEnvSecretKeyByDefault(): void
     {
-        $original = getenv('TRIPWIRE_SECRET_KEY');
-        putenv('TRIPWIRE_SECRET_KEY=sk_env_default');
+        $original = getenv('FOIL_SECRET_KEY');
+        putenv('FOIL_SECRET_KEY=sk_env_default');
 
         $fixture = FixtureLoader::load('api/sessions/list.json');
         $factory = new Psr17Factory();
@@ -37,17 +37,17 @@ final class ClientTest extends TestCase
             self::assertCount(1, $result->items);
         } finally {
             if ($original !== false) {
-                putenv('TRIPWIRE_SECRET_KEY=' . $original);
+                putenv('FOIL_SECRET_KEY=' . $original);
             } else {
-                putenv('TRIPWIRE_SECRET_KEY');
+                putenv('FOIL_SECRET_KEY');
             }
         }
     }
 
     public function testThrowsWhenNoSecretKeyIsConfigured(): void
     {
-        $original = getenv('TRIPWIRE_SECRET_KEY');
-        putenv('TRIPWIRE_SECRET_KEY');
+        $original = getenv('FOIL_SECRET_KEY');
+        putenv('FOIL_SECRET_KEY');
 
         try {
             $factory = new Psr17Factory();
@@ -59,15 +59,15 @@ final class ClientTest extends TestCase
             self::assertNotNull($client->gate());
         } finally {
             if ($original !== false) {
-                putenv('TRIPWIRE_SECRET_KEY=' . $original);
+                putenv('FOIL_SECRET_KEY=' . $original);
             }
         }
     }
 
     public function testSecretEndpointsFailAtRequestTimeWhenNoSecretIsConfigured(): void
     {
-        $original = getenv('TRIPWIRE_SECRET_KEY');
-        putenv('TRIPWIRE_SECRET_KEY');
+        $original = getenv('FOIL_SECRET_KEY');
+        putenv('FOIL_SECRET_KEY');
 
         try {
             $factory = new Psr17Factory();
@@ -80,7 +80,7 @@ final class ClientTest extends TestCase
             $client->sessions()->list();
         } finally {
             if ($original !== false) {
-                putenv('TRIPWIRE_SECRET_KEY=' . $original);
+                putenv('FOIL_SECRET_KEY=' . $original);
             }
         }
     }

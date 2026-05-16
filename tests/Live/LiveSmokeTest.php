@@ -15,18 +15,18 @@ final class LiveSmokeTest extends TestCase
 {
     protected function setUp(): void
     {
-        if ((getenv('TRIPWIRE_LIVE_SMOKE') ?: '') !== '1') {
-            $this->markTestSkipped('Set TRIPWIRE_LIVE_SMOKE=1 to run live smoke tests.');
+        if ((getenv('FOIL_LIVE_SMOKE') ?: '') !== '1') {
+            $this->markTestSkipped('Set FOIL_LIVE_SMOKE=1 to run live smoke tests.');
         }
     }
 
     public function testPublicServerSurface(): void
     {
         $client = new Client(
-            secretKey: $this->requireEnv('TRIPWIRE_SMOKE_SECRET_KEY'),
-            baseUrl: getenv('TRIPWIRE_SMOKE_BASE_URL') ?: 'https://api.tripwirejs.com',
+            secretKey: $this->requireEnv('FOIL_SMOKE_SECRET_KEY'),
+            baseUrl: getenv('FOIL_SMOKE_BASE_URL') ?: 'https://api.tripwirejs.com',
         );
-        $organizationId = $this->requireEnv('TRIPWIRE_SMOKE_ORGANIZATION_ID');
+        $organizationId = $this->requireEnv('FOIL_SMOKE_ORGANIZATION_ID');
 
         $createdKeyId = null;
         $rotatedKeyId = null;

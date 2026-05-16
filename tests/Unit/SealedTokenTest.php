@@ -41,17 +41,17 @@ final class SealedTokenTest extends TestCase
     public function testMissingSecretRaisesConfigurationError(): void
     {
         $fixture = FixtureLoader::load('sealed-token/vector.v1.json');
-        $original = getenv('TRIPWIRE_SECRET_KEY');
-        putenv('TRIPWIRE_SECRET_KEY');
+        $original = getenv('FOIL_SECRET_KEY');
+        putenv('FOIL_SECRET_KEY');
 
         try {
             $this->expectException(TripwireConfigurationError::class);
             SealedToken::verify($fixture['token']);
         } finally {
             if ($original !== false) {
-                putenv('TRIPWIRE_SECRET_KEY=' . $original);
+                putenv('FOIL_SECRET_KEY=' . $original);
             } else {
-                putenv('TRIPWIRE_SECRET_KEY');
+                putenv('FOIL_SECRET_KEY');
             }
         }
     }

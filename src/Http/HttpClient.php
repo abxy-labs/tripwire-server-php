@@ -55,7 +55,7 @@ final class HttpClient
         } elseif ($authMode === self::AUTH_SECRET) {
             if ($this->secretKey === null || $this->secretKey === '') {
                 throw new \Tripwire\Server\Exception\TripwireConfigurationError(
-                    'Missing Tripwire secret key. Pass secretKey explicitly or set TRIPWIRE_SECRET_KEY.',
+                    'Missing Tripwire secret key. Pass secretKey explicitly or set FOIL_SECRET_KEY.',
                 );
             }
             $request = $request->withHeader('Authorization', 'Bearer ' . $this->secretKey);
