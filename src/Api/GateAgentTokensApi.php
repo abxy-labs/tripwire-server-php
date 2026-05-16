@@ -2,10 +2,10 @@
 
 declare(strict_types=1);
 
-namespace Tripwire\Server\Api;
+namespace Foil\Server\Api;
 
-use Tripwire\Server\Http\HttpClient;
-use Tripwire\Server\Resource\AgentTokenVerification;
+use Foil\Server\Http\HttpClient;
+use Foil\Server\Resource\AgentTokenVerification;
 
 final class GateAgentTokensApi
 {

@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Tripwire\Server\Http;
+namespace Foil\Server\Http;
 
 use JsonException;
 use Psr\Http\Client\ClientInterface as PsrHttpClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use Tripwire\Server\Exception\TripwireApiError;
+use Foil\Server\Exception\FoilApiError;
 
 final class HttpClient
 {
-    private const SDK_CLIENT_HEADER = 'abxy/tripwire-server';
+    private const SDK_CLIENT_HEADER = 'abxy/foil-server';
     public const AUTH_SECRET = 'secret';
     public const AUTH_NONE = 'none';
     public const AUTH_BEARER = 'bearer';
@@ -43,19 +43,19 @@ final class HttpClient
     ): array {
         $request = $this->requestFactory->createRequest($method, $this->buildUrl($path, $query))
             ->withHeader('Accept', 'application/json')
-            ->withHeader('X-Tripwire-Client', self::SDK_CLIENT_HEADER);
+            ->withHeader('X-Foil-Client', self::SDK_CLIENT_HEADER);
 
         if ($authMode === self::AUTH_BEARER) {
             if ($bearerToken === null || $bearerToken === '') {
-                throw new \Tripwire\Server\Exception\TripwireConfigurationError(
-                    'Missing bearer token for this Tripwire request.',
+                throw new \Foil\Server\Exception\FoilConfigurationError(
+                    'Missing bearer token for this Foil request.',
                 );
             }
             $request = $request->withHeader('Authorization', 'Bearer ' . $bearerToken);
         } elseif ($authMode === self::AUTH_SECRET) {
             if ($this->secretKey === null || $this->secretKey === '') {
-                throw new \Tripwire\Server\Exception\TripwireConfigurationError(
-                    'Missing Tripwire secret key. Pass secretKey explicitly or set FOIL_SECRET_KEY.',
+                throw new \Foil\Server\Exception\FoilConfigurationError(
+                    'Missing Foil secret key. Pass secretKey explicitly or set FOIL_SECRET_KEY.',
                 );
             }
             $request = $request->withHeader('Authorization', 'Bearer ' . $this->secretKey);
@@ -84,10 +84,10 @@ final class HttpClient
                 $details = isset($error['details']) && is_array($error['details']) ? $error['details'] : [];
                 $fieldErrors = isset($details['fields']) && is_array($details['fields']) ? $details['fields'] : [];
 
-                throw new TripwireApiError(
+                throw new FoilApiError(
                     $status,
                     (string) ($error['code'] ?? 'request.failed'),
-                    (string) ($error['message'] ?? ($payloadText !== '' ? $payloadText : 'Tripwire request failed.')),
+                    (string) ($error['message'] ?? ($payloadText !== '' ? $payloadText : 'Foil request failed.')),
                     $requestId !== '' ? $requestId : (isset($error['request_id']) ? (string) $error['request_id'] : null),
                     $fieldErrors,
                     isset($error['docs_url']) ? (string) $error['docs_url'] : null,
@@ -95,10 +95,10 @@ final class HttpClient
                 );
             }
 
-            throw new TripwireApiError(
+            throw new FoilApiError(
                 $status,
                 'request.failed',
-                $payloadText !== '' ? $payloadText : 'Tripwire request failed.',
+                $payloadText !== '' ? $payloadText : 'Foil request failed.',
                 $requestId !== '' ? $requestId : null,
                 [],
                 null,
@@ -113,10 +113,10 @@ final class HttpClient
         try {
             $payload = json_decode($payloadText, true, 512, JSON_THROW_ON_ERROR);
         } catch (JsonException $exception) {
-            throw new TripwireApiError(
+            throw new FoilApiError(
                 $status,
                 'response.invalid_json',
-                'Tripwire API returned invalid JSON.',
+                'Foil API returned invalid JSON.',
                 $requestId !== '' ? $requestId : null,
                 [],
                 null,
@@ -125,10 +125,10 @@ final class HttpClient
         }
 
         if (!is_array($payload)) {
-            throw new TripwireApiError(
+            throw new FoilApiError(
                 $status,
                 'response.invalid_json',
-                'Tripwire API returned invalid JSON.',
+                'Foil API returned invalid JSON.',
                 $requestId !== '' ? $requestId : null,
                 [],
                 null,

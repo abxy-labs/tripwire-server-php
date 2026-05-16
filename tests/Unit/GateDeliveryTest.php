@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tripwire\Server\Tests\Unit;
+namespace Foil\Server\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use Tripwire\Server\GateDelivery;
-use Tripwire\Server\Tests\Support\FixtureLoader;
+use Foil\Server\GateDelivery;
+use Foil\Server\Tests\Support\FixtureLoader;
 
 final class GateDeliveryTest extends TestCase
 {

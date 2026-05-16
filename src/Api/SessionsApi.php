@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Tripwire\Server\Api;
+namespace Foil\Server\Api;
 
 use Generator;
-use Tripwire\Server\Http\HttpClient;
-use Tripwire\Server\Resource\SessionDetail;
-use Tripwire\Server\Resource\SessionSummary;
-use Tripwire\Server\Result\ListResult;
+use Foil\Server\Http\HttpClient;
+use Foil\Server\Resource\SessionDetail;
+use Foil\Server\Resource\SessionSummary;
+use Foil\Server\Result\ListResult;
 
 final class SessionsApi
 {

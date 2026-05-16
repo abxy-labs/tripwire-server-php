@@ -2,21 +2,21 @@
 
 declare(strict_types=1);
 
-namespace Tripwire\Server\Result;
+namespace Foil\Server\Result;
 
 use Throwable;
-use Tripwire\Server\Resource\VerifiedTripwireToken;
+use Foil\Server\Resource\VerifiedFoilToken;
 
 final class SafeVerifyResult
 {
     public function __construct(
         public readonly bool $ok,
-        public readonly ?VerifiedTripwireToken $data = null,
+        public readonly ?VerifiedFoilToken $data = null,
         public readonly ?Throwable $error = null,
     ) {
     }
 
-    public static function success(VerifiedTripwireToken $data): self
+    public static function success(VerifiedFoilToken $data): self
     {
         return new self(true, $data, null);
     }

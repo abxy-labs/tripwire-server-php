@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Tripwire\Server\Api;
+namespace Foil\Server\Api;
 
-use Tripwire\Server\Http\HttpClient;
-use Tripwire\Server\Resource\GateSessionCreate;
-use Tripwire\Server\Resource\GateSessionDeliveryAcknowledgement;
-use Tripwire\Server\Resource\GateSessionPollData;
+use Foil\Server\Http\HttpClient;
+use Foil\Server\Resource\GateSessionCreate;
+use Foil\Server\Resource\GateSessionDeliveryAcknowledgement;
+use Foil\Server\Resource\GateSessionPollData;
 
 final class GateSessionsApi
 {

@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tripwire\Server\Resource;
+namespace Foil\Server\Resource;
 
-final class VerifiedTripwireToken
+final class VerifiedFoilToken
 {
     /**
      * @param array<string, mixed> $decision

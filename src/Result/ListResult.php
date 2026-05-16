@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tripwire\Server\Result;
+namespace Foil\Server\Result;
 
 final class ListResult
 {

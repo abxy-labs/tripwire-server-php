@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Tripwire\Server\Tests\Unit;
+namespace Foil\Server\Tests\Unit;
 
 use PHPUnit\Framework\TestCase;
-use Tripwire\Server\Exception\TripwireConfigurationError;
-use Tripwire\Server\Exception\TripwireTokenVerificationError;
-use Tripwire\Server\SealedToken;
-use Tripwire\Server\Tests\Support\FixtureLoader;
+use Foil\Server\Exception\FoilConfigurationError;
+use Foil\Server\Exception\FoilTokenVerificationError;
+use Foil\Server\SealedToken;
+use Foil\Server\Tests\Support\FixtureLoader;
 
 final class SealedTokenTest extends TestCase
 {
@@ -35,7 +35,7 @@ final class SealedTokenTest extends TestCase
         $result = SealedToken::safeVerify($fixture['token'], 'sk_live_fixture_secret');
 
         self::assertFalse($result->ok);
-        self::assertInstanceOf(TripwireTokenVerificationError::class, $result->error);
+        self::assertInstanceOf(FoilTokenVerificationError::class, $result->error);
     }
 
     public function testMissingSecretRaisesConfigurationError(): void
@@ -45,7 +45,7 @@ final class SealedTokenTest extends TestCase
         putenv('FOIL_SECRET_KEY');
 
         try {
-            $this->expectException(TripwireConfigurationError::class);
+            $this->expectException(FoilConfigurationError::class);
             SealedToken::verify($fixture['token']);
         } finally {
             if ($original !== false) {

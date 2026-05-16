@@ -2,11 +2,11 @@
 
 declare(strict_types=1);
 
-namespace Tripwire\Server\Exception;
+namespace Foil\Server\Exception;
 
 use RuntimeException;
 
-final class TripwireApiError extends RuntimeException
+final class FoilApiError extends RuntimeException
 {
     /**
      * @param array<int, array<string, mixed>> $fieldErrors

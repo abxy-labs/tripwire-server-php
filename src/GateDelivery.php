@@ -2,18 +2,18 @@
 
 declare(strict_types=1);
 
-namespace Tripwire\Server;
+namespace Foil\Server;
 
 use JsonException;
-use Tripwire\Server\Resource\GateDeliveryEnvelope;
-use Tripwire\Server\Resource\GateDeliveryPrivateKey;
+use Foil\Server\Resource\GateDeliveryEnvelope;
+use Foil\Server\Resource\GateDeliveryPrivateKey;
 
 final class GateDelivery
 {
     public const GATE_DELIVERY_VERSION = 1;
     public const GATE_DELIVERY_ALGORITHM = 'x25519-hkdf-sha256/aes-256-gcm';
     public const GATE_AGENT_TOKEN_ENV_SUFFIX = '_GATE_AGENT_TOKEN';
-    private const GATE_DELIVERY_HKDF_INFO = 'tripwire-gate-delivery:v1';
+    private const GATE_DELIVERY_HKDF_INFO = 'foil-gate-delivery:v1';
     private const X25519_PKCS8_PREFIX_HEX = '302e020100300506032b656e04220420';
     private const BLOCKED_GATE_ENV_VAR_KEYS = [
         'BASH_ENV',
@@ -64,7 +64,7 @@ final class GateDelivery
             throw new \InvalidArgumentException('service_id is required to derive a Gate agent token env key');
         }
 
-        if ($normalized === 'TRIPWIRE' || $normalized === 'FOIL') {
+        if ($normalized === 'FOIL' || $normalized === 'FOIL') {
             return 'FOIL' . self::GATE_AGENT_TOKEN_ENV_SUFFIX;
         }
 
@@ -353,14 +353,14 @@ final class GateDelivery
         if (($value['metadata'] ?? null) !== null && !is_array($value['metadata'] ?? null)) {
             throw new \InvalidArgumentException('metadata must be an object or null');
         }
-        if (!is_array($value['tripwire'] ?? null)) {
-            throw new \InvalidArgumentException('tripwire must be an object');
+        if (!is_array($value['foil'] ?? null)) {
+            throw new \InvalidArgumentException('foil must be an object');
         }
-        if (!in_array($value['tripwire']['verdict'] ?? null, ['bot', 'human', 'inconclusive'], true)) {
-            throw new \InvalidArgumentException('tripwire.verdict is invalid');
+        if (!in_array($value['foil']['verdict'] ?? null, ['bot', 'human', 'inconclusive'], true)) {
+            throw new \InvalidArgumentException('foil.verdict is invalid');
         }
-        if (($value['tripwire']['score'] ?? null) !== null && !is_int($value['tripwire']['score']) && !is_float($value['tripwire']['score'])) {
-            throw new \InvalidArgumentException('tripwire.score must be a number or null');
+        if (($value['foil']['score'] ?? null) !== null && !is_int($value['foil']['score']) && !is_float($value['foil']['score'])) {
+            throw new \InvalidArgumentException('foil.score must be a number or null');
         }
 
         return [
@@ -369,9 +369,9 @@ final class GateDelivery
             'gate_account_id' => $value['gate_account_id'],
             'account_name' => $value['account_name'],
             'metadata' => is_array($value['metadata'] ?? null) ? $value['metadata'] : null,
-            'tripwire' => [
-                'verdict' => $value['tripwire']['verdict'],
-                'score' => isset($value['tripwire']['score']) ? (float) $value['tripwire']['score'] : null,
+            'foil' => [
+                'verdict' => $value['foil']['verdict'],
+                'score' => isset($value['foil']['score']) ? (float) $value['foil']['score'] : null,
             ],
             'delivery' => self::validateGateDeliveryRequest($value['delivery'] ?? []),
         ];
@@ -440,7 +440,7 @@ final class GateDelivery
         ?int $nowSeconds = null,
     ): array {
         if (!self::verifyGateWebhookSignature($secret, $timestamp, $rawBody, $signature, $maxAgeSeconds, $nowSeconds)) {
-            throw new \InvalidArgumentException('Invalid Tripwire webhook signature');
+            throw new \InvalidArgumentException('Invalid Foil webhook signature');
         }
 
         return self::parseWebhookEvent($rawBody);

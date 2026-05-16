@@ -2,31 +2,31 @@
 
 declare(strict_types=1);
 
-namespace Tripwire\Server;
+namespace Foil\Server;
 
 use JsonException;
 use Throwable;
-use Tripwire\Server\Exception\TripwireConfigurationError;
-use Tripwire\Server\Exception\TripwireTokenVerificationError;
-use Tripwire\Server\Resource\VerifiedTripwireToken;
-use Tripwire\Server\Result\SafeVerifyResult;
+use Foil\Server\Exception\FoilConfigurationError;
+use Foil\Server\Exception\FoilTokenVerificationError;
+use Foil\Server\Resource\VerifiedFoilToken;
+use Foil\Server\Result\SafeVerifyResult;
 
 final class SealedToken
 {
     private const VERSION = 0x01;
 
-    public static function verify(string $sealedToken, ?string $secretKey = null): VerifiedTripwireToken
+    public static function verify(string $sealedToken, ?string $secretKey = null): VerifiedFoilToken
     {
         $resolvedSecret = self::resolveSecretKey($secretKey);
 
         $buffer = base64_decode($sealedToken, true);
         if ($buffer === false || strlen($buffer) < 29) {
-            throw new TripwireTokenVerificationError('Tripwire token is too short.');
+            throw new FoilTokenVerificationError('Foil token is too short.');
         }
 
         if (ord($buffer[0]) !== self::VERSION) {
-            throw new TripwireTokenVerificationError(
-                sprintf('Unsupported Tripwire token version: %d', ord($buffer[0])),
+            throw new FoilTokenVerificationError(
+                sprintf('Unsupported Foil token version: %d', ord($buffer[0])),
             );
         }
 
@@ -44,39 +44,39 @@ final class SealedToken
                 $tag,
             );
         } catch (Throwable $exception) {
-            throw new TripwireTokenVerificationError('Failed to verify Tripwire token.', $exception);
+            throw new FoilTokenVerificationError('Failed to verify Foil token.', $exception);
         }
 
         if (!is_string($plaintext)) {
-            throw new TripwireTokenVerificationError('Failed to verify Tripwire token.');
+            throw new FoilTokenVerificationError('Failed to verify Foil token.');
         }
 
         $inflated = zlib_decode($plaintext);
         if (!is_string($inflated)) {
-            throw new TripwireTokenVerificationError('Failed to verify Tripwire token.');
+            throw new FoilTokenVerificationError('Failed to verify Foil token.');
         }
 
         try {
             $payload = json_decode($inflated, true, 512, JSON_THROW_ON_ERROR);
         } catch (JsonException $exception) {
-            throw new TripwireTokenVerificationError('Failed to verify Tripwire token.', $exception);
+            throw new FoilTokenVerificationError('Failed to verify Foil token.', $exception);
         }
 
         if (!is_array($payload)) {
-            throw new TripwireTokenVerificationError('Failed to verify Tripwire token.');
+            throw new FoilTokenVerificationError('Failed to verify Foil token.');
         }
 
-        return VerifiedTripwireToken::fromArray($payload);
+        return VerifiedFoilToken::fromArray($payload);
     }
 
     public static function safeVerify(string $sealedToken, ?string $secretKey = null): SafeVerifyResult
     {
         try {
             return SafeVerifyResult::success(self::verify($sealedToken, $secretKey));
-        } catch (TripwireConfigurationError|TripwireTokenVerificationError $exception) {
+        } catch (FoilConfigurationError|FoilTokenVerificationError $exception) {
             return SafeVerifyResult::failure($exception);
         } catch (Throwable $exception) {
-            return SafeVerifyResult::failure(new TripwireTokenVerificationError('Failed to verify Tripwire token.', $exception));
+            return SafeVerifyResult::failure(new FoilTokenVerificationError('Failed to verify Foil token.', $exception));
         }
     }
 
@@ -88,8 +88,8 @@ final class SealedToken
         }
 
         if ($resolved === null || $resolved === '') {
-            throw new TripwireConfigurationError(
-                'Missing Tripwire secret key. Pass secretKey explicitly or set FOIL_SECRET_KEY.',
+            throw new FoilConfigurationError(
+                'Missing Foil secret key. Pass secretKey explicitly or set FOIL_SECRET_KEY.',
             );
         }
 

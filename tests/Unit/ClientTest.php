@@ -2,17 +2,17 @@
 
 declare(strict_types=1);
 
-namespace Tripwire\Server\Tests\Unit;
+namespace Foil\Server\Tests\Unit;
 
 use Nyholm\Psr7\Factory\Psr17Factory;
 use PHPUnit\Framework\TestCase;
 use Psr\Http\Message\RequestInterface;
-use Tripwire\Server\Client;
-use Tripwire\Server\Exception\TripwireApiError;
-use Tripwire\Server\Exception\TripwireConfigurationError;
-use Tripwire\Server\Tests\Support\FixtureLoader;
-use Tripwire\Server\Tests\Support\JsonResponse;
-use Tripwire\Server\Tests\Support\TestHttpClient;
+use Foil\Server\Client;
+use Foil\Server\Exception\FoilApiError;
+use Foil\Server\Exception\FoilConfigurationError;
+use Foil\Server\Tests\Support\FixtureLoader;
+use Foil\Server\Tests\Support\JsonResponse;
+use Foil\Server\Tests\Support\TestHttpClient;
 
 final class ClientTest extends TestCase
 {
@@ -76,7 +76,7 @@ final class ClientTest extends TestCase
                 requestFactory: $factory,
                 streamFactory: $factory,
             );
-            $this->expectException(TripwireConfigurationError::class);
+            $this->expectException(FoilConfigurationError::class);
             $client->sessions()->list();
         } finally {
             if ($original !== false) {
@@ -100,7 +100,7 @@ final class ClientTest extends TestCase
             self::assertSame('bot', $query['verdict']);
             self::assertSame('25', (string) $query['limit']);
             self::assertSame('Bearer sk_live_test', $request->getHeaderLine('Authorization'));
-            self::assertSame('abxy/tripwire-server', $request->getHeaderLine('X-Tripwire-Client'));
+            self::assertSame('abxy/foil-server', $request->getHeaderLine('X-Foil-Client'));
 
             return JsonResponse::create($fixture);
         });
@@ -390,7 +390,7 @@ final class ClientTest extends TestCase
                 self::assertSame('', $auth);
                 return JsonResponse::create($registryListFixture);
             }
-            if ($path === '/v1/gate/registry/tripwire') {
+            if ($path === '/v1/gate/registry/foil') {
                 self::assertSame('', $auth);
                 return JsonResponse::create($registryDetailFixture);
             }
@@ -398,7 +398,7 @@ final class ClientTest extends TestCase
                 self::assertSame('Bearer sk_live_test', $auth);
                 return JsonResponse::create($servicesListFixture);
             }
-            if ($path === '/v1/gate/services/tripwire' && $request->getMethod() === 'GET') {
+            if ($path === '/v1/gate/services/foil' && $request->getMethod() === 'GET') {
                 self::assertSame('Bearer sk_live_test', $auth);
                 return JsonResponse::create($serviceDetailFixture);
             }
@@ -453,10 +453,10 @@ final class ClientTest extends TestCase
             streamFactory: $factory,
         );
 
-        self::assertSame('tripwire', $client->gate()->registry()->list()[0]->id);
-        self::assertSame('tripwire', $client->gate()->registry()->get('tripwire')->id);
+        self::assertSame('foil', $client->gate()->registry()->list()[0]->id);
+        self::assertSame('foil', $client->gate()->registry()->get('foil')->id);
         self::assertSame('acme_prod', $client->gate()->services()->list()[0]->id);
-        self::assertSame('acme_prod', $client->gate()->services()->get('tripwire')->id);
+        self::assertSame('acme_prod', $client->gate()->services()->get('foil')->id);
         self::assertSame(
             'acme_prod',
             $client->gate()->services()->create(
@@ -472,7 +472,7 @@ final class ClientTest extends TestCase
         self::assertSame(
             'gate_0123456789abcdefghjkmnpqrs',
             $client->gate()->sessions()->create(
-                'tripwire',
+                'foil',
                 'my-project',
                 [
                     'version' => 1,
@@ -484,13 +484,13 @@ final class ClientTest extends TestCase
         );
         self::assertSame('approved', $client->gate()->sessions()->poll('gate_0123456789abcdefghjkmnpqrs', 'gtpoll_0123456789abcdefghjkmnpqrs')->status);
         self::assertSame('acknowledged', $client->gate()->sessions()->acknowledge('gate_0123456789abcdefghjkmnpqrs', 'gtpoll_0123456789abcdefghjkmnpqrs', 'gtack_0123456789abcdefghjkmnpqrs')->status);
-        self::assertSame('gate_login_session', $client->gate()->loginSessions()->create('tripwire', 'agt_0123456789abcdefghjkmnpqrs')->object);
+        self::assertSame('gate_login_session', $client->gate()->loginSessions()->create('foil', 'agt_0123456789abcdefghjkmnpqrs')->object);
         self::assertSame('gate_dashboard_login', $client->gate()->loginSessions()->consume('gate_code_0123456789abcdefghjkm')->object);
         self::assertTrue($client->gate()->agentTokens()->verify('agt_0123456789abcdefghjkmnpqrs')->valid);
         self::assertNull($client->gate()->agentTokens()->revoke('agt_0123456789abcdefghjkmnpqrs'));
     }
 
-    public function testParsesApiErrorsIntoTripwireApiError(): void
+    public function testParsesApiErrorsIntoFoilApiError(): void
     {
         $fixture = FixtureLoader::load('errors/validation-error.json');
         $factory = new Psr17Factory();
@@ -509,8 +509,8 @@ final class ClientTest extends TestCase
 
         try {
             $client->sessions()->list(limit: 999);
-            self::fail('Expected TripwireApiError to be thrown.');
-        } catch (TripwireApiError $error) {
+            self::fail('Expected FoilApiError to be thrown.');
+        } catch (FoilApiError $error) {
             self::assertSame(422, $error->status);
             self::assertSame($fixture['error']['code'], $error->code);
             self::assertSame($fixture['error']['request_id'], $error->request_id);

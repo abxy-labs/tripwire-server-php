@@ -2,14 +2,14 @@
 
 declare(strict_types=1);
 
-namespace Tripwire\Server\Tests\Live;
+namespace Foil\Server\Tests\Live;
 
 use PHPUnit\Framework\TestCase;
-use Tripwire\Server\Client;
-use Tripwire\Server\Exception\TripwireApiError;
-use Tripwire\Server\Resource\ApiKey;
-use Tripwire\Server\SealedToken;
-use Tripwire\Server\Tests\Support\FixtureLoader;
+use Foil\Server\Client;
+use Foil\Server\Exception\FoilApiError;
+use Foil\Server\Resource\ApiKey;
+use Foil\Server\SealedToken;
+use Foil\Server\Tests\Support\FixtureLoader;
 
 final class LiveSmokeTest extends TestCase
 {
@@ -24,7 +24,7 @@ final class LiveSmokeTest extends TestCase
     {
         $client = new Client(
             secretKey: $this->requireEnv('FOIL_SMOKE_SECRET_KEY'),
-            baseUrl: getenv('FOIL_SMOKE_BASE_URL') ?: 'https://api.tripwirejs.com',
+            baseUrl: getenv('FOIL_SMOKE_BASE_URL') ?: 'https://api.usefoil.com',
         );
         $organizationId = $this->requireEnv('FOIL_SMOKE_ORGANIZATION_ID');
 
@@ -94,7 +94,7 @@ final class LiveSmokeTest extends TestCase
 
         try {
             $client->organizations()->apiKeys()->revoke($organizationId, $keyId);
-        } catch (TripwireApiError $error) {
+        } catch (FoilApiError $error) {
             if ($error->status === 404 || $error->code === 'request.not_found') {
                 return;
             }

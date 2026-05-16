@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Tripwire\Server\Api;
+namespace Foil\Server\Api;
 
 use Generator;
-use Tripwire\Server\Http\HttpClient;
-use Tripwire\Server\Resource\FingerprintDetail;
-use Tripwire\Server\Resource\FingerprintSummary;
-use Tripwire\Server\Result\ListResult;
+use Foil\Server\Http\HttpClient;
+use Foil\Server\Resource\FingerprintDetail;
+use Foil\Server\Resource\FingerprintSummary;
+use Foil\Server\Result\ListResult;
 
 final class FingerprintsApi
 {
