@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tripwire\Server\Tests\Support;
+namespace Foil\Server\Tests\Support;
 
 use Nyholm\Psr7\Response;
 

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tripwire\Server;
+namespace Foil\Server;
 
 use GuzzleHttp\Client as GuzzleClient;
 use Http\Discovery\Psr17FactoryDiscovery;
@@ -12,17 +12,17 @@ use Psr\Http\Client\ClientExceptionInterface;
 use Psr\Http\Client\ClientInterface as PsrHttpClientInterface;
 use Psr\Http\Message\RequestFactoryInterface;
 use Psr\Http\Message\StreamFactoryInterface;
-use Tripwire\Server\Api\FingerprintsApi;
-use Tripwire\Server\Api\GateApi;
-use Tripwire\Server\Api\SessionsApi;
-use Tripwire\Server\Api\OrganizationsApi;
-use Tripwire\Server\Api\WebhooksApi;
-use Tripwire\Server\Exception\TripwireConfigurationError;
-use Tripwire\Server\Http\HttpClient;
+use Foil\Server\Api\FingerprintsApi;
+use Foil\Server\Api\GateApi;
+use Foil\Server\Api\SessionsApi;
+use Foil\Server\Api\OrganizationsApi;
+use Foil\Server\Api\WebhooksApi;
+use Foil\Server\Exception\FoilConfigurationError;
+use Foil\Server\Http\HttpClient;
 
 final class Client
 {
-    private const DEFAULT_BASE_URL = 'https://api.tripwirejs.com';
+    private const DEFAULT_BASE_URL = 'https://api.usefoil.com';
 
     private SessionsApi $sessions;
     private FingerprintsApi $fingerprints;
@@ -31,7 +31,7 @@ final class Client
     private WebhooksApi $webhooks;
 
     /**
-     * @throws TripwireConfigurationError
+     * @throws FoilConfigurationError
      */
     public function __construct(
         ?string $secretKey = null,
@@ -97,7 +97,7 @@ final class Client
     {
         $resolved = $secretKey;
         if ($resolved === null || $resolved === '') {
-            $resolved = getenv('TRIPWIRE_SECRET_KEY') ?: null;
+            $resolved = getenv('FOIL_SECRET_KEY') ?: null;
         }
 
         return ($resolved === null || $resolved === '') ? null : $resolved;
@@ -129,7 +129,7 @@ final class Client
         try {
             $resolvedHttpClient = $httpClient ?? Psr18ClientDiscovery::find();
         } catch (ClientExceptionInterface|\Throwable $exception) {
-            throw new TripwireConfigurationError(
+            throw new FoilConfigurationError(
                 'Unable to discover a PSR-18 HTTP client. Install a client like guzzlehttp/guzzle or pass one explicitly.',
             );
         }
@@ -138,7 +138,7 @@ final class Client
             $resolvedRequestFactory = $requestFactory ?? Psr17FactoryDiscovery::findRequestFactory();
             $resolvedStreamFactory = $streamFactory ?? Psr17FactoryDiscovery::findStreamFactory();
         } catch (\Throwable $exception) {
-            throw new TripwireConfigurationError(
+            throw new FoilConfigurationError(
                 'Unable to discover PSR-17 factories. Install nyholm/psr7 or pass requestFactory and streamFactory explicitly.',
             );
         }

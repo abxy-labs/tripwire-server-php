@@ -2,9 +2,9 @@
 
 declare(strict_types=1);
 
-namespace Tripwire\Server\Api;
+namespace Foil\Server\Api;
 
-use Tripwire\Server\Http\HttpClient;
+use Foil\Server\Http\HttpClient;
 
 final class GateApi
 {

@@ -2,7 +2,7 @@
 
 declare(strict_types=1);
 
-namespace Tripwire\Server\Tests\Contract;
+namespace Foil\Server\Tests\Contract;
 
 use PHPUnit\Framework\TestCase;
 
@@ -137,7 +137,7 @@ final class ContractTest extends TestCase
         self::assertSame(['$ref' => '#/components/schemas/ApiKeyStatus'], $this->withoutExamples($schemas['ApiKey']['properties']['status']));
         self::assertSame(
             '#/components/schemas/KnownPublicErrorCode',
-            $schemas['PublicError']['properties']['code']['x-tripwire-known-values-ref'],
+            $schemas['PublicError']['properties']['code']['x-foil-known-values-ref'],
         );
         self::assertSame(['active', 'suspended', 'deleted'], $schemas['OrganizationStatus']['enum']);
         self::assertSame(['active', 'rotating', 'revoked'], $schemas['ApiKeyStatus']['enum']);

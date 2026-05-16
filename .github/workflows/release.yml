@@ -77,7 +77,7 @@ jobs:
           VERSION: ${{ steps.version.outputs.version }}
         run: |
           mkdir -p artifacts
-          git archive --format=tar.gz --output="artifacts/abxy-tripwire-server-${VERSION}.tar.gz" HEAD
+          git archive --format=tar.gz --output="artifacts/abxy-foil-server-${VERSION}.tar.gz" HEAD
 
       - uses: actions/upload-artifact@v4
         with:

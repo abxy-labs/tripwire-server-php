@@ -2,13 +2,13 @@
 
 declare(strict_types=1);
 
-namespace Tripwire\Server\Api;
+namespace Foil\Server\Api;
 
-use Tripwire\Server\Http\HttpClient;
-use Tripwire\Server\Resource\Event;
-use Tripwire\Server\Resource\WebhookEndpoint;
-use Tripwire\Server\Resource\WebhookTest;
-use Tripwire\Server\Result\ListResult;
+use Foil\Server\Http\HttpClient;
+use Foil\Server\Resource\Event;
+use Foil\Server\Resource\WebhookEndpoint;
+use Foil\Server\Resource\WebhookTest;
+use Foil\Server\Result\ListResult;
 
 final class WebhooksApi
 {

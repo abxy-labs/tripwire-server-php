@@ -1,14 +1,14 @@
-# Tripwire PHP Library
+# Foil PHP Library
 
 ![Preview](https://img.shields.io/badge/status-preview-111827)
 ![PHP 8.1+](https://img.shields.io/badge/php-%E2%89%A58.1-777BB4?logo=php&logoColor=white)
 ![License: MIT](https://img.shields.io/badge/license-MIT-0f766e.svg)
 
-The Tripwire PHP library provides convenient access to the Tripwire API from applications written in PHP. It includes a framework-agnostic client for Sessions, visitor fingerprints, Organizations, Organization API key management, sealed token verification, Gate, and Gate delivery/webhook helpers.
+The Foil PHP library provides convenient access to the Foil API from applications written in PHP. It includes a framework-agnostic client for Sessions, visitor fingerprints, Organizations, Organization API key management, sealed token verification, Gate, and Gate delivery/webhook helpers.
 
 The library also provides:
 
-- a fast configuration path using `TRIPWIRE_SECRET_KEY`
+- a fast configuration path using `FOIL_SECRET_KEY`
 - a bundled PSR-18 transport stack with support for custom PSR clients and factories
 - structured API errors and built-in sealed token verification
 - webhook endpoint management, test sends, and event delivery history
@@ -17,14 +17,14 @@ The library also provides:
 
 ## Documentation
 
-See the [Tripwire docs](https://tripwirejs.com/docs) and [API reference](https://tripwirejs.com/docs/api-reference/introduction).
+See the [Foil docs](https://usefoil.com/docs) and [API reference](https://usefoil.com/docs/api-reference/introduction).
 
 ## Installation
 
 You don't need this source code unless you want to modify the package. If you just want to use the package, run:
 
 ```bash
-composer require abxy/tripwire-server
+composer require abxy/foil-server
 ```
 
 ## Requirements
@@ -33,14 +33,14 @@ composer require abxy/tripwire-server
 
 ## Usage
 
-Use `TRIPWIRE_SECRET_KEY` or `secretKey` for core detect APIs. For public or bearer-auth Gate flows, the client can also be created without a secret key:
+Use `FOIL_SECRET_KEY` or `secretKey` for core detect APIs. For public or bearer-auth Gate flows, the client can also be created without a secret key:
 
 ```php
 <?php
 
-use Tripwire\Server\Client;
+use Foil\Server\Client;
 
-$client = new Client(secretKey: getenv('TRIPWIRE_SECRET_KEY') ?: null);
+$client = new Client(secretKey: getenv('FOIL_SECRET_KEY') ?: null);
 
 $page = $client->sessions()->list(verdict: 'bot', limit: 25);
 $session = $client->sessions()->get('sid_0123456789abcdefghjkmnpqrs');
@@ -53,12 +53,12 @@ echo $session->decision['automation_status'] . ' ' . ($session->highlights[0]['s
 ```php
 <?php
 
-use Tripwire\Server\SealedToken;
+use Foil\Server\SealedToken;
 
-$result = SealedToken::safeVerify($sealedToken, getenv('TRIPWIRE_SECRET_KEY') ?: null);
+$result = SealedToken::safeVerify($sealedToken, getenv('FOIL_SECRET_KEY') ?: null);
 
 if (!$result->ok) {
-    error_log($result->error?->getMessage() ?? 'Tripwire verification failed.');
+    error_log($result->error?->getMessage() ?? 'Foil verification failed.');
     return;
 }
 
@@ -112,7 +112,7 @@ $client->organizations()->apiKeys()->revoke('org_0123456789abcdefghjkmnpqrs', $c
 $endpoint = $client->webhooks()->createEndpoint(
     'org_0123456789abcdefghjkmnpqrs',
     'Production alerts',
-    'https://example.com/tripwire/webhook',
+    'https://example.com/foil/webhook',
     ['session.result.persisted', 'gate.session.approved'],
 );
 
@@ -130,13 +130,13 @@ echo $events->items[0]->webhook_deliveries[0]->status;
 ```php
 <?php
 
-use Tripwire\Server\Client;
-use Tripwire\Server\GateDelivery;
+use Foil\Server\Client;
+use Foil\Server\GateDelivery;
 
 $client = new Client();
 $services = $client->gate()->registry()->list();
 $session = $client->gate()->sessions()->create(
-    serviceId: 'tripwire',
+    serviceId: 'foil',
     accountName: 'my-project',
     delivery: GateDelivery::createDeliveryKeyPair()['delivery'],
 );
@@ -149,19 +149,19 @@ echo $services[0]->id . ' ' . $session->consent_url . PHP_EOL;
 ```php
 <?php
 
-use Tripwire\Server\GateDelivery;
+use Foil\Server\GateDelivery;
 
 $keyPair = GateDelivery::createDeliveryKeyPair();
 $response = GateDelivery::createGateApprovedWebhookResponse([
     'delivery' => $keyPair['delivery'],
     'outputs' => [
-        'TRIPWIRE_PUBLISHABLE_KEY' => 'pk_live_...',
-        'TRIPWIRE_SECRET_KEY' => 'sk_live_...',
+        'FOIL_PUBLISHABLE_KEY' => 'pk_live_...',
+        'FOIL_SECRET_KEY' => 'sk_live_...',
     ],
 ]);
 $payload = GateDelivery::decryptGateDeliveryEnvelope($keyPair['private_key'], $response['encrypted_delivery']);
 
-echo $payload['outputs']['TRIPWIRE_SECRET_KEY'] . PHP_EOL;
+echo $payload['outputs']['FOIL_SECRET_KEY'] . PHP_EOL;
 ```
 
 ### Error handling
@@ -169,15 +169,15 @@ echo $payload['outputs']['TRIPWIRE_SECRET_KEY'] . PHP_EOL;
 ```php
 <?php
 
-use Tripwire\Server\Exception\TripwireApiError;
+use Foil\Server\Exception\FoilApiError;
 
 try {
     $client->sessions()->list(limit: 999);
-} catch (TripwireApiError $error) {
+} catch (FoilApiError $error) {
     error_log($error->status . ' ' . $error->code . ' ' . $error->getMessage());
 }
 ```
 
 ## Support
 
-If you need help integrating Tripwire, start with [tripwirejs.com/docs](https://tripwirejs.com/docs).
+If you need help integrating Foil, start with [usefoil.com/docs](https://usefoil.com/docs).

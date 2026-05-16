@@ -2,12 +2,12 @@
 
 declare(strict_types=1);
 
-namespace Tripwire\Server\Api;
+namespace Foil\Server\Api;
 
-use Tripwire\Server\Http\HttpClient;
-use Tripwire\Server\Resource\ApiKey;
-use Tripwire\Server\Resource\IssuedApiKey;
-use Tripwire\Server\Result\ListResult;
+use Foil\Server\Http\HttpClient;
+use Foil\Server\Resource\ApiKey;
+use Foil\Server\Resource\IssuedApiKey;
+use Foil\Server\Result\ListResult;
 
 final class ApiKeysApi
 {
