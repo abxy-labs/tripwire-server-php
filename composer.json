@@ -56,9 +56,9 @@
       "name": "ABXY Labs"
     }
   ],
-  "homepage": "https://github.com/abxy-labs/tripwire-server-php",
+  "homepage": "https://github.com/abxy-labs/foil-server-php",
   "support": {
-    "issues": "https://github.com/abxy-labs/tripwire-server-php/issues",
-    "source": "https://github.com/abxy-labs/tripwire-server-php"
+    "issues": "https://github.com/abxy-labs/foil-server-php/issues",
+    "source": "https://github.com/abxy-labs/foil-server-php"
   }
 }

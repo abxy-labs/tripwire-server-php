@@ -7,7 +7,7 @@ This repository uses a manual `release.yml` workflow. Versions are independent f
 Configure these GitHub and registry settings:
 
 1. Create a protected GitHub environment named `release` with required reviewer approval.
-2. Create the public package on Packagist and connect it to `abxy-labs/tripwire-server-php`.
+2. Create the public package on Packagist and connect it to `abxy-labs/foil-server-php`.
 3. Confirm Packagist is configured to sync new GitHub tags from this repository.
 
 ## Release flow
